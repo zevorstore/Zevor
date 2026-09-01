@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pago Confirmado — ZEVOR</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --black: #0d0d0d; --white: #fafaf8; --gray-light: #e8e8e5;
+            --gray-mid: #888884; --gray-sub: #f4f4f2; --green: #1a6b3a;
+            --font-serif: 'Playfair Display', Georgia, serif;
+            --font-sans: 'Montserrat', system-ui, sans-serif;
+        }
+        body { font-family: var(--font-sans); background: var(--white); color: var(--black); min-height: 100vh; display: flex; flex-direction: column; }
+        .nav { background: var(--black); padding: 0 1.5rem; display: flex; align-items: center; height: 56px; }
+        .nav__logo { font-family: var(--font-serif); color: var(--white); font-size: 1.15rem; letter-spacing: 0.18em; text-decoration: none; }
+
+        .page { flex: 1; display: flex; align-items: center; justify-content: center; padding: 3rem 1.25rem; }
+        .card {
+            max-width: 520px; width: 100%;
+            text-align: center;
+            padding: 3rem 2.5rem;
+            border: 1px solid var(--gray-light);
+            border-radius: 4px;
+        }
+        .icon-wrap {
+            width: 64px; height: 64px; border-radius: 50%;
+            background: #e8f5ed; display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+        .title { font-family: var(--font-serif); font-size: 1.8rem; font-weight: 400; margin-bottom: 0.75rem; }
+        .subtitle { font-size: 0.82rem; color: var(--gray-mid); letter-spacing: 0.04em; line-height: 1.6; margin-bottom: 2rem; }
+        .order-box {
+            background: var(--gray-sub); border: 1px solid var(--gray-light);
+            border-radius: 3px; padding: 1.25rem; margin-bottom: 1.75rem; text-align: left;
+        }
+        .order-row { display: flex; justify-content: space-between; font-size: 0.78rem; padding: 0.3rem 0; }
+        .order-row span:first-child { color: var(--gray-mid); }
+        .order-row--total { font-family: var(--font-serif); font-size: 1rem; border-top: 1px solid var(--gray-light); margin-top: 0.5rem; padding-top: 0.75rem; }
+        .btn { display: inline-block; padding: 0.85rem 2rem; font-family: var(--font-sans); font-size: 0.65rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; text-decoration: none; border: none; border-radius: 3px; cursor: pointer; }
+        .btn--dark { background: var(--black); color: var(--white); }
+        .btn--outline { background: transparent; color: var(--black); border: 1px solid var(--gray-light); margin-left: 0.75rem; }
+        .loading-text { color: var(--gray-mid); font-size: 0.82rem; padding: 2rem; }
+    </style>
+</head>
+<body>
+<nav class="nav"><a href="index.html" class="nav__logo">ZEVOR</a></nav>
+
+<main class="page">
+    <div class="card" id="content">
+        <div class="loading-text">Verificando tu pago…</div>
+    </div>
+</main>
+
+<script>
+const SERVER_URL = 'http://localhost:3001';
+const orderId    = new URLSearchParams(location.search).get('order');
+const content    = document.getElementById('content');
+
+function fmt(n) { return '$' + Number(n).toLocaleString('es-AR'); }
+
+async function verificarOrden() {
+    if (!orderId) { mostrarError(); return; }
+    try {
+        /* Esperar hasta 10 seg a que el webhook confirme el pago */
+        for (let i = 0; i < 5; i++) {
+            const res  = await fetch(`${SERVER_URL}/api/order/${orderId}`);
+            const data = await res.json();
+            if (data.status === 'paid') { mostrarExito(data); return; }
+            if (data.status === 'pending') { await sleep(2000); continue; }
+            mostrarError(); return;
+        }
+        /* Pago pendiente (puede demorar procesamiento bancario) */
+        mostrarPendiente();
+    } catch {
+        mostrarError();
+    }
+}
+
+function mostrarExito(order) {
+    /* Limpiar carrito */
+    localStorage.removeItem('zevorCart');
+
+    const itemsHTML = (order.items || []).map(i =>
+        `<div class="order-row"><span>${i.title} × ${i.quantity}</span><span>${fmt(i.unit_price * i.quantity)}</span></div>`
+    ).join('');
+
+    content.innerHTML = `
+        <div class="icon-wrap">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1a6b3a" stroke-width="2.5" stroke-linecap="round">
+                <polyline points="20 6 9 17 4 12"/>
+            </svg>
+        </div>
+        <h1 class="title">¡Gracias por tu compra!</h1>
+        <p class="subtitle">Tu pago fue confirmado. En breve recibirás un email con los detalles de tu pedido.</p>
+        <div class="order-box">
+            <div class="order-row"><span>N° de Orden</span><span style="font-weight:600">${order.id}</span></div>
+            <div class="order-row"><span>Fecha</span><span>${new Date(order.paidAt || order.createdAt).toLocaleDateString('es-AR')}</span></div>
+            <div style="height:0.5rem"></div>
+            ${itemsHTML}
+            <div class="order-row order-row--total"><span>Total</span><span>${fmt(order.total)}</span></div>
+        </div>
+        <a href="catalogo.html" class="btn btn--dark">Seguir comprando</a>
+        <a href="index.html" class="btn btn--outline">Inicio</a>`;
+}
+
+function mostrarPendiente() {
+    content.innerHTML = `
+        <div class="icon-wrap" style="background:#fff8e1">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <h1 class="title" style="font-size:1.4rem">Pago en proceso</h1>
+        <p class="subtitle">Tu pago está siendo procesado. En cuanto se confirme recibirás un email. N° de orden: <strong>${orderId}</strong></p>
+        <a href="index.html" class="btn btn--dark">Volver al inicio</a>`;
+}
+
+function mostrarError() {
+    content.innerHTML = `
+        <div class="icon-wrap" style="background:#fdf0ef">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c0392b" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        </div>
+        <h1 class="title" style="font-size:1.4rem">Algo salió mal</h1>
+        <p class="subtitle">No pudimos confirmar tu pago. Si fue descontado de tu cuenta, contactanos con el N° <strong>${orderId || '—'}</strong></p>
+        <a href="checkout.html" class="btn btn--dark">Reintentar pago</a>
+        <a href="index.html" class="btn btn--outline">Inicio</a>`;
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+verificarOrden();
+</script>
+</body>
+</html>

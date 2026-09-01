@@ -1,0 +1,450 @@
+/* =============================================
+   ZEVOR — catalogo.css
+   Estilos para páginas de catálogo
+   ============================================= */
+
+/* Navbar fija oscura desde el inicio en páginas de catálogo */
+body { padding-top: var(--nav-h); }
+
+/* ----- HERO (negro con título) ----- */
+.page-hero {
+    background: var(--dark);
+    text-align: center;
+    position: relative;
+}
+
+.page-hero__title-view {
+    padding: 2rem 1.25rem;
+}
+
+.page-hero__inner { max-width: 700px; margin: 0 auto; }
+.page-hero .label { margin-bottom: 0.8rem; }
+
+.page-hero__title {
+    font-family: var(--font-serif);
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 400;
+    color: var(--white);
+    letter-spacing: 0.04em;
+    margin-bottom: 0.8rem;
+}
+
+.page-hero__sub {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 0.1em;
+}
+
+/* ----- PANEL BLANCO DE CATEGORÍAS (dropdown del nav link RAY-BAN) ----- */
+.page-hero__menu {
+    display: none;
+    position: fixed;
+    top: var(--nav-h);
+    left: 0;
+    right: 0;
+    z-index: 150;
+    background: var(--white);
+    border-bottom: 3px solid var(--gold);
+    box-shadow: 0 6px 24px rgba(0,0,0,0.10);
+}
+
+.hero-menu__inner {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem 2.5rem;
+    text-align: center;
+}
+
+.hero-menu__label {
+    font-family: var(--font-sans);
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    color: var(--black);
+    margin-bottom: 1.6rem;
+    text-align: center;
+}
+
+.hero-menu__links {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(160px, auto));
+    gap: 0.05rem 0;
+    justify-content: center;
+}
+
+.hero-menu__link {
+    font-family: var(--font-sans);
+    font-size: 0.82rem;
+    font-weight: 400;
+    color: var(--gray-mid);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    transition: color 0.15s;
+    white-space: nowrap;
+    text-align: center;
+    width: 100%;
+}
+.hero-menu__link:hover { color: var(--black); }
+.hero-menu__link--active { color: var(--black); font-weight: 600; }
+
+/* ----- HERO MODELO (páginas individuales) ----- */
+.model-hero {
+    position: relative;
+    background: var(--dark);
+    overflow: hidden;
+    min-height: 320px;
+    display: flex;
+    align-items: flex-end;
+}
+
+.model-hero__img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.45;
+}
+
+.model-hero__overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 60%);
+}
+
+.model-hero__content {
+    position: relative;
+    z-index: 2;
+    padding: 3rem 1.25rem 2.5rem;
+    max-width: 1240px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.model-hero .label { margin-bottom: 0.6rem; }
+
+.model-hero__title {
+    font-family: var(--font-serif);
+    font-size: clamp(2rem, 6vw, 4rem);
+    font-weight: 400;
+    color: var(--white);
+    letter-spacing: 0.04em;
+    margin-bottom: 0.5rem;
+}
+
+.model-hero__desc {
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.6);
+    max-width: 420px;
+}
+
+/* catalog-nav conservado para páginas de modelo (aviator.html, etc.) */
+.catalog-nav {
+    border-bottom: 1px solid var(--gray-light);
+    background: var(--white);
+    position: sticky;
+    top: var(--nav-h);
+    z-index: 100;
+}
+.catalog-nav__links {
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+.catalog-nav__links::-webkit-scrollbar { display: none; }
+.catalog-nav__link {
+    font-size: 0.62rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gray-mid);
+    padding: 1.1rem 1.4rem;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+}
+.catalog-nav__link:hover { color: var(--black); }
+.catalog-nav__link--active { color: var(--black); border-bottom-color: var(--gold); }
+
+/* ----- SECCIONES DEL CATÁLOGO ----- */
+.catalog-section {
+    padding: 4rem 0;
+}
+
+.catalog-section__head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.catalog-section__title {
+    font-family: var(--font-serif);
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    font-weight: 400;
+    letter-spacing: 0.03em;
+    margin-top: 0.5rem;
+}
+
+.catalog-divider {
+    height: 1px;
+    background: var(--gray-light);
+    margin: 0 1.25rem;
+}
+
+/* ----- GRID DE PRODUCTOS ----- */
+.catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+@media (min-width: 600px) {
+    .catalog-grid { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+}
+
+@media (min-width: 768px) {
+    .catalog-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (min-width: 900px) {
+    .catalog-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+/* ----- TARJETA DE CATÁLOGO ----- */
+.cat-card__link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.cat-card__frame {
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    background: var(--gray-subtle);
+    margin-bottom: 0.9rem;
+    position: relative;
+}
+
+.cat-card__frame--placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cat-placeholder-label {
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gray-mid);
+    opacity: 0.5;
+}
+
+.cat-card__img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    padding: 0;
+    transition: transform 0.6s var(--ease-out);
+}
+
+.cat-card__link:hover .cat-card__img { transform: scale(1.04); }
+
+.cat-card__name {
+    font-family: var(--font-serif);
+    font-size: 0.95rem;
+    font-weight: 400;
+    margin-bottom: 0.2rem;
+}
+
+.cat-card__variant {
+    font-size: 0.68rem;
+    color: var(--gray-mid);
+    letter-spacing: 0.04em;
+}
+
+/* ----- BREADCRUMB ----- */
+.breadcrumb {
+    padding: 1rem 1.25rem;
+    max-width: 1240px;
+    margin: 0 auto;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    scrollbar-width: none;
+}
+.breadcrumb::-webkit-scrollbar { display: none; }
+
+.breadcrumb a,
+.breadcrumb span {
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gray-mid);
+    white-space: nowrap;
+}
+
+.breadcrumb a:hover { color: var(--black); }
+
+.breadcrumb__sep { opacity: 0.4; }
+
+.breadcrumb__current { color: var(--black); }
+
+/* ----- BADGES DE STOCK (generados por admin) ----- */
+.cat-badge {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    font-size: 0.55rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.7rem;
+    z-index: 2;
+    pointer-events: none;
+}
+.cat-badge--agotado { background: rgba(0,0,0,0.82); color: #fff; }
+.cat-badge--ultimas { background: var(--gold, #B8860B); color: #fff; }
+.cat-card--agotado { opacity: 0.55; }
+
+/* ----- PAGINACIÓN ----- */
+.catalog-pagination {
+    margin-top: 3rem;
+    display: flex;
+    justify-content: center;
+}
+
+.pagination__inner {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.pagination__btn {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    background: none;
+    border: 1px solid var(--gray-light);
+    color: var(--gray-mid);
+    width: 2.4rem;
+    height: 2.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.pagination__btn:hover:not(:disabled):not(.pagination__btn--active) {
+    border-color: var(--black);
+    color: var(--black);
+}
+
+.pagination__btn--active {
+    background: var(--black);
+    border-color: var(--black);
+    color: var(--white);
+    cursor: default;
+}
+
+.pagination__btn--prev,
+.pagination__btn--next {
+    font-size: 0.9rem;
+}
+
+.pagination__btn:disabled {
+    opacity: 0.3;
+    cursor: default;
+}
+
+/* ----- SWATCHES DE VARIANTES EN TARJETA ----- */
+.cat-card__swatches {
+    display: flex;
+    gap: 0.35rem;
+    padding: 0.55rem 0 0.1rem;
+    flex-wrap: wrap;
+}
+.cat-swatch {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    padding: 2px;
+    cursor: pointer;
+    background: var(--gray-subtle, #f4f4f2);
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.15s;
+    outline: none;
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+.cat-swatch img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
+.cat-swatch:hover { transform: scale(1.18); }
+.cat-swatch--active { border-color: var(--gold, #B8860B); }
+
+/* ----- PRECIO EN TARJETA (desde admin) ----- */
+.cat-card__price {
+    font-family: var(--font-serif);
+    font-size: 0.9rem;
+    color: var(--black);
+    margin-top: 0.3rem;
+    font-weight: 400;
+}
+
+/* ----- BOTÓN AGREGAR AL CARRITO ----- */
+.cat-card__add {
+    margin-top: 0.75rem;
+    width: 100%;
+    background: var(--black);
+    color: var(--white);
+    border: none;
+    padding: 0.6rem 0.5rem;
+    font-family: var(--font-sans);
+    font-size: 0.55rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    transition: background 0.2s;
+}
+.cat-card__add:hover { background: #333; }
+.cat-card__add:disabled { background: var(--gold); color: var(--black); cursor: default; }
+
+/* ----- BADGE DEL CARRITO EN NAV ----- */
+.cart-icon-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.cart-badge {
+    position: absolute;
+    top: -4px;
+    right: -6px;
+    background: var(--gold);
+    color: var(--black);
+    font-size: 0.5rem;
+    font-weight: 700;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    font-family: var(--font-sans);
+}

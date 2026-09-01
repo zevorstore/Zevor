@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito — ZEVOR</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="catalogo.css">
+    <style>
+        .cart-page { max-width: 1000px; margin: 0 auto; padding: 2.5rem 1.25rem 5rem; }
+        .cart-page__title {
+            font-family: var(--font-serif);
+            font-size: clamp(1.6rem, 4vw, 2.4rem);
+            font-weight: 400;
+            margin-bottom: 0.4rem;
+        }
+        .cart-page__count {
+            font-size: 0.65rem;
+            letter-spacing: 0.15em;
+            color: var(--gray-mid);
+            text-transform: uppercase;
+            margin-bottom: 2.5rem;
+        }
+
+        /* Layout */
+        .cart-page__layout { display: grid; grid-template-columns: 1fr; gap: 2.5rem; }
+        @media (min-width: 768px) {
+            .cart-page__layout { grid-template-columns: 1fr 320px; align-items: start; }
+        }
+
+        /* Items */
+        .cp-items { display: flex; flex-direction: column; }
+        .cp-item {
+            display: grid;
+            grid-template-columns: 80px 1fr auto;
+            gap: 1.1rem;
+            align-items: center;
+            padding: 1.25rem 0;
+            border-bottom: 1px solid var(--gray-light);
+        }
+        .cp-item__img {
+            width: 80px; height: 80px;
+            background: var(--gray-subtle);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; overflow: hidden;
+        }
+        .cp-item__img img { width: 100%; height: 100%; object-fit: contain; padding: 0.4rem; }
+        .cp-item__img-placeholder { width: 100%; height: 100%; background: #e8e8e8; }
+
+        .cp-item__info { display: flex; flex-direction: column; gap: 0.25rem; }
+        .cp-item__name {
+            font-family: var(--font-sans);
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+        }
+        .cp-item__variant { font-size: 0.65rem; color: var(--gray-mid); }
+        .cp-item__price {
+            font-family: var(--font-serif);
+            font-size: 0.85rem;
+            margin-top: 0.3rem;
+        }
+        .cp-item__qty {
+            display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;
+        }
+        .cp-qty-btn {
+            width: 26px; height: 26px;
+            border: 1px solid var(--gray-light);
+            background: none; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem; color: var(--black);
+            transition: border-color 0.2s;
+        }
+        .cp-qty-btn:hover { border-color: var(--black); }
+        .cp-item__qty-num { font-size: 0.78rem; min-width: 20px; text-align: center; }
+
+        .cp-item__remove {
+            background: none; border: none; cursor: pointer;
+            color: var(--gray-mid); font-size: 1rem;
+            transition: color 0.2s; padding: 0.25rem;
+            align-self: flex-start;
+        }
+        .cp-item__remove:hover { color: var(--black); }
+
+        /* Resumen */
+        .cp-summary {
+            border: 1px solid var(--gray-light);
+            padding: 1.8rem;
+            position: sticky;
+            top: calc(var(--nav-h) + 1rem);
+        }
+        .cp-summary__title {
+            font-size: 0.6rem; font-weight: 600;
+            letter-spacing: 0.25em; text-transform: uppercase;
+            margin-bottom: 1.4rem;
+        }
+        .cp-summary__row {
+            display: flex; justify-content: space-between;
+            font-size: 0.78rem; padding: 0.6rem 0;
+            border-bottom: 1px solid var(--gray-light);
+        }
+        .cp-summary__row:last-of-type { border-bottom: none; }
+        .cp-summary__row--total { font-weight: 600; font-size: 0.9rem; padding-top: 1rem; }
+        .cp-summary__label { color: var(--gray-mid); }
+
+        .cp-wa-btn {
+            width: 100%; margin-top: 1.4rem;
+            padding: 1rem; text-align: center;
+            font-size: 0.65rem; letter-spacing: 0.2em;
+            background: #25D366; color: #fff; border: none; cursor: pointer;
+            font-family: var(--font-sans); font-weight: 600;
+            display: flex; align-items: center; justify-content: center;
+            gap: 0.5rem; transition: background 0.2s; text-transform: uppercase;
+        }
+        .cp-wa-btn:hover { background: #1da851; }
+        .cp-wa-btn:disabled { background: #aaa; cursor: not-allowed; }
+
+        .cp-continue {
+            display: block; text-align: center; margin-top: 1rem;
+            font-size: 0.62rem; letter-spacing: 0.12em;
+            text-transform: uppercase; color: var(--gray-mid);
+            transition: color 0.2s;
+        }
+        .cp-continue:hover { color: var(--black); }
+
+        /* Vacío */
+        .cp-empty { text-align: center; padding: 5rem 1rem; }
+        .cp-empty__title {
+            font-family: var(--font-serif);
+            font-size: 1.8rem; font-weight: 400; margin-bottom: 0.8rem;
+        }
+        .cp-empty__sub { font-size: 0.75rem; color: var(--gray-mid); margin-bottom: 2rem; }
+
+        /* WhatsApp not configured */
+        .cp-wa-note {
+            font-size: 0.6rem; color: var(--gray-mid);
+            text-align: center; margin-top: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+
+<header class="nav nav--scrolled" id="navbar">
+    <div class="nav__inner">
+        <a href="index.html" class="nav__logo">ZEVOR</a>
+        <nav class="nav__links">
+            <a href="catalogo.html" class="nav__link">Ray-Ban</a>
+            <a href="index.html#autenticidad" class="nav__link">La Experiencia ZEVOR</a>
+            <a href="index.html#journal" class="nav__link">Journal</a>
+        </nav>
+        <div class="nav__actions">
+            <span class="cart-icon-wrap">
+                <button class="nav__icon" data-cart-toggle aria-label="Carrito">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+                        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+                    </svg>
+                </button>
+                <span class="cart-badge" style="display:none"></span>
+            </span>
+            <button class="nav__burger" id="burgerBtn" aria-label="Abrir menú" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </div>
+</header>
+
+<nav class="nav__drawer" id="mobileDrawer">
+    <a href="catalogo.html" class="nav__drawer-link">Ray-Ban</a>
+    <a href="index.html#autenticidad" class="nav__drawer-link">La Experiencia ZEVOR</a>
+    <a href="index.html#journal" class="nav__drawer-link">Journal</a>
+</nav>
+
+<main class="cart-page">
+    <h1 class="cart-page__title">Tu Carrito</h1>
+    <p class="cart-page__count" id="cpCount"></p>
+
+    <!-- Carrito vacío -->
+    <div id="cpEmpty" style="display:none">
+        <div class="cp-empty">
+            <p class="cp-empty__title">Tu carrito está vacío</p>
+            <p class="cp-empty__sub">Todavía no agregaste ningún producto.</p>
+            <a href="catalogo.html" class="btn btn--dark" style="display:inline-block;padding:0.9rem 2rem;font-size:0.65rem;letter-spacing:0.2em;">Ver productos</a>
+        </div>
+    </div>
+
+    <!-- Carrito con items -->
+    <div id="cpFull" style="display:none">
+        <div class="cart-page__layout">
+            <div class="cp-items" id="cpItems"></div>
+
+            <aside class="cp-summary">
+                <p class="cp-summary__title">Resumen del pedido</p>
+                <div class="cp-summary__row">
+                    <span class="cp-summary__label">Subtotal</span>
+                    <span id="cpSubtotal">—</span>
+                </div>
+                <div class="cp-summary__row">
+                    <span class="cp-summary__label">Envío</span>
+                    <span>A coordinar</span>
+                </div>
+                <div class="cp-summary__row cp-summary__row--total">
+                    <span>Total</span>
+                    <span id="cpTotal">—</span>
+                </div>
+                <button class="cp-wa-btn" id="cpWaBtn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                    </svg>
+                    Consultar por WhatsApp
+                </button>
+                <p class="cp-wa-note" id="cpWaNote" style="display:none">Configurá el número de WhatsApp en el panel de administración.</p>
+                <a href="catalogo.html" class="cp-continue">← Seguir comprando</a>
+            </aside>
+        </div>
+    </div>
+</main>
+
+<footer class="footer">
+    <div class="container">
+        <div class="footer__grid">
+            <div class="footer__brand">
+                <span class="footer__brand-logo">ZEVOR</span>
+                <p class="footer__brand-line">La diferencia no se explica.<br>Se lleva puesta.</p>
+            </div>
+            <div class="footer__newsletter">
+                <span class="footer__section-title">Acceso Exclusivo</span>
+                <p class="footer__newsletter-desc">Sé el primero en enterarte de novedades exclusivas.</p>
+                <form class="newsletter-form" onsubmit="return false;">
+                    <input type="email" class="newsletter-form__input" placeholder="Tu correo electrónico">
+                    <button type="submit" class="newsletter-form__btn">→</button>
+                </form>
+            </div>
+            <div class="footer__info">
+                <span class="footer__section-title">Información</span>
+                <ul class="footer__links-list">
+                    <li><a href="#">Contáctanos</a></li>
+                    <li><a href="#">Envíos y Devoluciones</a></li>
+                    <li><a href="#">Autenticidad</a></li>
+                    <li><a href="#">Preguntas Frecuentes</a></li>
+                </ul>
+            </div>
+            <div class="footer__social">
+                <span class="footer__section-title">Síguenos</span>
+                <div class="social-row" id="footerSocial"></div>
+            </div>
+        </div>
+        <div class="footer__bar">
+            <p>&copy; 2026 ZEVOR. Todos los derechos reservados.</p>
+        </div>
+    </div>
+</footer>
+
+<script src="cart.js"></script>
+<script>
+    /* Burger */
+    var burgerBtn = document.getElementById('burgerBtn');
+    var mobileDrawer = document.getElementById('mobileDrawer');
+    burgerBtn.addEventListener('click', function() {
+        var isOpen = mobileDrawer.classList.toggle('nav__drawer--open');
+        burgerBtn.classList.toggle('nav__burger--open', isOpen);
+        burgerBtn.setAttribute('aria-expanded', isOpen);
+    });
+
+    /* Carrito page — sobrescribe el comportamiento del data-cart-toggle para que no navegue */
+    document.querySelectorAll('[data-cart-toggle]').forEach(function(btn) {
+        btn.onclick = null;
+    });
+
+    function fmt(n) { return '$' + Number(n).toLocaleString('es-AR'); }
+
+    function renderCarritoPage() {
+        var cart   = ZV_CART.getCart();
+        var empty  = document.getElementById('cpEmpty');
+        var full   = document.getElementById('cpFull');
+        var countEl = document.getElementById('cpCount');
+
+        if (!cart.length) {
+            empty.style.display = '';
+            full.style.display  = 'none';
+            countEl.textContent = '';
+            return;
+        }
+
+        empty.style.display = 'none';
+        full.style.display  = '';
+        countEl.textContent = cart.length === 1 ? '1 producto' : cart.length + ' productos';
+
+        /* Items */
+        var container = document.getElementById('cpItems');
+        container.innerHTML = '';
+
+        cart.forEach(function(item) {
+            var el = document.createElement('div');
+            el.className = 'cp-item';
+
+            var imgHtml = item.img
+                ? '<img src="' + item.img + '" alt="' + item.name + '" onerror="this.style.display=\'none\'">'
+                : '<div class="cp-item__img-placeholder"></div>';
+
+            el.innerHTML =
+                '<div class="cp-item__img">' + imgHtml + '</div>' +
+                '<div class="cp-item__info">' +
+                    '<span class="cp-item__name">' + item.name + '</span>' +
+                    (item.variant ? '<span class="cp-item__variant">' + item.variant + '</span>' : '') +
+                    '<span class="cp-item__price">' + fmt(item.price) + '</span>' +
+                    '<div class="cp-item__qty">' +
+                        '<button class="cp-qty-btn" data-action="dec" data-id="' + item.id + '">−</button>' +
+                        '<span class="cp-item__qty-num">' + item.qty + '</span>' +
+                        '<button class="cp-qty-btn" data-action="inc" data-id="' + item.id + '">+</button>' +
+                    '</div>' +
+                '</div>' +
+                '<button class="cp-item__remove" data-action="remove" data-id="' + item.id + '" title="Eliminar">✕</button>';
+
+            container.appendChild(el);
+        });
+
+        /* Delegación */
+        container.onclick = function(e) {
+            var btn = e.target.closest('[data-action]');
+            if (!btn) return;
+            var id     = btn.dataset.id;
+            var action = btn.dataset.action;
+            if (action === 'inc')    { ZV_CART.changeQty(id, 1);  renderCarritoPage(); }
+            if (action === 'dec')    { ZV_CART.changeQty(id, -1); renderCarritoPage(); }
+            if (action === 'remove') { ZV_CART.removeItem(id);    renderCarritoPage(); }
+        };
+
+        /* Totales */
+        var total = cart.reduce(function(s, c) { return s + (c.price || 0) * c.qty; }, 0);
+        document.getElementById('cpSubtotal').textContent = fmt(total);
+        document.getElementById('cpTotal').textContent    = fmt(total);
+
+        /* Botón WhatsApp */
+        var waBtn  = document.getElementById('cpWaBtn');
+        var waNote = document.getElementById('cpWaNote');
+        var waUrl  = ZV_CART.buildWhatsAppUrl();
+        if (waUrl) {
+            waBtn.disabled = false;
+            waNote.style.display = 'none';
+            waBtn.onclick = function() { window.open(waUrl, '_blank'); };
+        } else {
+            waBtn.disabled = true;
+            waNote.style.display = '';
+        }
+    }
+
+    renderCarritoPage();
+
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'zv_cart') renderCarritoPage();
+    });
+</script>
+</body>
+</html>

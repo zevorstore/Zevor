@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pago No Completado — ZEVOR</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root { --black: #0d0d0d; --white: #fafaf8; --gray-light: #e8e8e5; --gray-mid: #888884; --red: #c0392b; --font-serif: 'Playfair Display', Georgia, serif; --font-sans: 'Montserrat', system-ui, sans-serif; }
+        body { font-family: var(--font-sans); background: var(--white); color: var(--black); min-height: 100vh; display: flex; flex-direction: column; }
+        .nav { background: var(--black); padding: 0 1.5rem; display: flex; align-items: center; height: 56px; }
+        .nav__logo { font-family: var(--font-serif); color: var(--white); font-size: 1.15rem; letter-spacing: 0.18em; text-decoration: none; }
+        .page { flex: 1; display: flex; align-items: center; justify-content: center; padding: 3rem 1.25rem; }
+        .card { max-width: 480px; width: 100%; text-align: center; padding: 3rem 2.5rem; border: 1px solid var(--gray-light); border-radius: 4px; }
+        .icon-wrap { width: 64px; height: 64px; border-radius: 50%; background: #fdf0ef; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; }
+        .title { font-family: var(--font-serif); font-size: 1.8rem; font-weight: 400; margin-bottom: 0.75rem; }
+        .subtitle { font-size: 0.82rem; color: var(--gray-mid); line-height: 1.7; margin-bottom: 2rem; }
+        .reasons { background: #f9f9f7; border: 1px solid var(--gray-light); border-radius: 3px; padding: 1.25rem; margin-bottom: 2rem; text-align: left; }
+        .reason { font-size: 0.75rem; color: var(--gray-mid); padding: 0.3rem 0; display: flex; align-items: flex-start; gap: 0.5rem; line-height: 1.5; }
+        .reason::before { content: '·'; font-size: 1.2rem; line-height: 1; flex-shrink: 0; }
+        .btns { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; }
+        .btn { display: inline-block; padding: 0.85rem 1.75rem; font-family: var(--font-sans); font-size: 0.65rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; text-decoration: none; border: none; border-radius: 3px; cursor: pointer; }
+        .btn--dark { background: var(--black); color: var(--white); }
+        .btn--outline { background: transparent; color: var(--black); border: 1px solid var(--gray-light); }
+    </style>
+</head>
+<body>
+<nav class="nav"><a href="index.html" class="nav__logo">ZEVOR</a></nav>
+
+<main class="page">
+    <div class="card">
+        <div class="icon-wrap">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#c0392b" stroke-width="2.5" stroke-linecap="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+            </svg>
+        </div>
+        <h1 class="title">Pago no completado</h1>
+        <p class="subtitle">
+            No se realizó ningún cobro a tu tarjeta.<br>
+            Podés reintentar cuando quieras.
+        </p>
+        <div class="reasons">
+            <p style="font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:#aaa;margin-bottom:0.6rem">Posibles causas</p>
+            <div class="reason">Fondos insuficientes o límite de tarjeta alcanzado.</div>
+            <div class="reason">Datos de la tarjeta incorrectos o vencida.</div>
+            <div class="reason">El banco rechazó la operación por seguridad.</div>
+            <div class="reason">Se canceló el proceso de pago.</div>
+        </div>
+        <div class="btns">
+            <a href="checkout.html" class="btn btn--dark">Reintentar pago</a>
+            <a href="catalogo.html" class="btn btn--outline">Ver productos</a>
+        </div>
+    </div>
+</main>
+</body>
+</html>

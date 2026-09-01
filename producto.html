@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wayfarer Clásico Original — Ray-Ban | ZEVOR</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="catalogo.css">
+    <link rel="stylesheet" href="producto.css">
+    <style>
+        /* Cuadraditos de variantes (estilo Mercado Libre) */
+        .pd__variant-btn {
+            width: 56px; height: 56px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            overflow: hidden;
+            cursor: pointer;
+            padding: 3px;
+            background: #f7f7f5;
+            display: block;
+            text-decoration: none;
+            transition: border-color 0.18s, transform 0.15s;
+            box-sizing: border-box;
+        }
+        .pd__variant-btn img { width: 100%; height: 100%; object-fit: contain; display: block; }
+        .pd__variant-btn:hover { border-color: #aaa; transform: scale(1.06); }
+        .pd__variant-btn--active { border-color: #B8860B; box-shadow: 0 0 0 1px #B8860B; }
+        .pd__variant-noimg {
+            display: flex; align-items: center; justify-content: center;
+            width: 100%; height: 100%; font-size: 1.2rem; color: #aaa;
+        }
+
+        .pd__lens-options {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.6rem 0 0.25rem;
+            flex-wrap: wrap;
+        }
+        .pd__lens-btn {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            padding: 2px;
+            cursor: pointer;
+            background: transparent;
+            transition: border-color 0.2s, transform 0.15s;
+            outline: none;
+            box-sizing: border-box;
+        }
+        .pd__lens-btn:hover { transform: scale(1.12); }
+        .pd__lens-btn--active { border-color: #B8860B; }
+        .pd__lens-swatch {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            display: block;
+        }
+
+        /* Selector Normal / Polarizado */
+        .pd__pol-btn {
+            padding: 0.45rem 1.1rem;
+            border-radius: 20px;
+            border: 1.5px solid #ddd;
+            font-size: 0.68rem;
+            font-family: inherit;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            cursor: pointer;
+            background: transparent;
+            color: #888;
+            transition: all 0.18s;
+        }
+        .pd__pol-btn:hover { border-color: #B8860B; color: #B8860B; }
+        .pd__pol-btn--active { border-color: #B8860B; background: #B8860B; color: #fff; }
+    </style>
+</head>
+<body>
+
+<header class="nav nav--scrolled" id="navbar">
+    <div class="nav__inner">
+        <a href="index.html" class="nav__logo">ZEVOR</a>
+        <nav class="nav__links">
+            <a href="catalogo.html" class="nav__link">Ray-Ban</a>
+            <a href="index.html#autenticidad" class="nav__link">La Experiencia ZEVOR</a>
+            <a href="index.html#journal" class="nav__link">Journal</a>
+        </nav>
+        <div class="nav__actions">
+            <button class="nav__icon" aria-label="Carrito">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+                </svg>
+            </button>
+            <button class="nav__burger" id="burgerBtn" aria-label="Abrir menú" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </div>
+</header>
+
+<nav class="nav__drawer" id="mobileDrawer">
+    <a href="catalogo.html" class="nav__drawer-link">Ray-Ban</a>
+    <a href="index.html#autenticidad" class="nav__drawer-link">La Experiencia ZEVOR</a>
+    <a href="index.html#journal" class="nav__drawer-link">Journal</a>
+</nav>
+
+<!-- PANEL DROPDOWN RAY-BAN (hover sobre nav link) -->
+<div class="page-hero__menu" id="heroMenu" style="display:none">
+    <div class="hero-menu__inner">
+        <p class="hero-menu__label">COLECCIÓN RAY-BAN</p>
+        <div class="hero-menu__links" id="heroCatLinks">
+            <a href="catalogo.html" class="hero-menu__link">Todos</a>
+            <!-- categorías dinámicas insertadas por JS -->
+            <a href="catalogo.html?polarized=1" class="hero-menu__link">Polarizados</a>
+        </div>
+    </div>
+</div>
+
+<!-- BREADCRUMB -->
+<div class="breadcrumb">
+    <a href="index.html">Inicio</a>
+    <span class="breadcrumb__sep">/</span>
+    <a href="catalogo.html">Ray-Ban</a>
+    <span class="breadcrumb__sep">/</span>
+    <a href="wayfarer.html">Wayfarer</a>
+    <span class="breadcrumb__sep">/</span>
+    <span class="breadcrumb__current">Wayfarer Clásico Original</span>
+</div>
+
+<!-- PRODUCTO -->
+<main class="pd">
+    <div class="pd__layout">
+
+        <!-- COLUMNA IZQUIERDA: Galería -->
+        <div class="pd__gallery">
+            <!-- Imagen principal — click abre lightbox -->
+            <div class="pd__main-img-wrap" id="mainImgWrap" role="button" tabindex="0"
+                 aria-label="Ampliar imagen" title="Click para ampliar">
+                <img src="Wayfarer/wy (3).avif" alt="Ray-Ban Wayfarer Clásico Original" class="pd__main-img" id="mainImg">
+                <div class="pd__zoom-hint" aria-hidden="true">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        <line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
+                    </svg>
+                    Ampliar
+                </div>
+            </div>
+
+            <!-- LIGHTBOX -->
+            <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Galería de imágenes">
+                <button class="lightbox__close" id="lightboxClose" aria-label="Cerrar">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
+                <button class="lightbox__arrow lightbox__arrow--prev" id="lightboxPrev" aria-label="Imagen anterior">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <polyline points="15 18 9 12 15 6"/>
+                    </svg>
+                </button>
+                <div class="lightbox__img-wrap">
+                    <img src="Wayfarer/wy (3).avif" alt="Ray-Ban Wayfarer" class="lightbox__img" id="lightboxImg">
+                </div>
+                <button class="lightbox__arrow lightbox__arrow--next" id="lightboxNext" aria-label="Imagen siguiente">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                </button>
+                <div class="lightbox__dots" id="lightboxDots"></div>
+            </div>
+
+            <!-- Miniaturas -->
+            <div class="pd__thumbs">
+                <button class="pd__thumb pd__thumb--active" aria-label="Vista 1" onclick="selectThumb(0, this)">
+                    <img src="Wayfarer/wy (3).avif" alt="Vista 1" style="width:100%;height:100%;object-fit:contain;padding:4px;">
+                </button>
+                <button class="pd__thumb" aria-label="Vista 2" onclick="selectThumb(1, this)">
+                    <img src="Wayfarer/wy (4).avif" alt="Vista 2" style="width:100%;height:100%;object-fit:contain;padding:4px;">
+                </button>
+                <button class="pd__thumb" aria-label="Vista 3" onclick="selectThumb(2, this)">
+                    <img src="Wayfarer/wy (5).avif" alt="Vista 3" style="width:100%;height:100%;object-fit:contain;padding:4px;">
+                </button>
+                <button class="pd__thumb" aria-label="Vista 4" onclick="selectThumb(3, this)">
+                    <img src="Wayfarer/wy (6).avif" alt="Vista 4" style="width:100%;height:100%;object-fit:contain;padding:4px;">
+                </button>
+            </div>
+        </div>
+
+        <!-- COLUMNA DERECHA: Detalles -->
+        <div class="pd__info">
+
+            <!-- Nombre + favorito -->
+            <div class="pd__title-row">
+                <h1 class="pd__name">Wayfarer Clásico Original</h1>
+                <button class="pd__wishlist" aria-label="Agregar al carrito" onclick="addToCart()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+                        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <path d="M16 10a4 4 0 0 1-8 0"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Colores -->
+            <div class="pd__section">
+                <p class="pd__section-label">20 Colores</p>
+                <div class="pd__colors">
+                    <button class="pd__color pd__color--active" data-color="0" aria-label="Negro pulido" title="Negro pulido">
+                        <div class="pd__color-swatch" style="background: #1a1a1a;"></div>
+                    </button>
+                    <button class="pd__color" data-color="1" aria-label="Negro mate" title="Negro mate">
+                        <div class="pd__color-swatch" style="background: #3a3a3a; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);"></div>
+                    </button>
+                    <button class="pd__color" data-color="2" aria-label="Carey" title="Carey">
+                        <div class="pd__color-swatch" style="background: linear-gradient(135deg, #8B4513, #D2691E);"></div>
+                    </button>
+                    <button class="pd__color" data-color="3" aria-label="Lighting Carey" title="Lighting Carey">
+                        <div class="pd__color-swatch" style="background: #B8860B;"></div>
+                    </button>
+                    <button class="pd__color" data-color="4" aria-label="Azul transparente" title="Azul transparente">
+                        <div class="pd__color-swatch" style="background: rgba(90,160,220,0.55); border: 1px solid rgba(90,160,220,0.4);"></div>
+                    </button>
+                    <button class="pd__color" data-color="5" aria-label="Violeta transparente" title="Violeta transparente">
+                        <div class="pd__color-swatch" style="background: rgba(140,80,200,0.5); border: 1px solid rgba(140,80,200,0.35);"></div>
+                    </button>
+                    <button class="pd__color" data-color="6" aria-label="Verde translúcido" title="Verde translúcido">
+                        <div class="pd__color-swatch" style="background: #1A6B3A;"></div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Marco y Lentes -->
+            <div class="pd__specs">
+                <div class="pd__spec-row">
+                    <span class="pd__spec-label">Marco</span>
+                    <span class="pd__spec-value" id="specMarco">Negro pulido</span>
+                </div>
+                <div class="pd__spec-divider"></div>
+                <div class="pd__spec-row">
+                    <span class="pd__spec-label">Lentes</span>
+                    <span class="pd__spec-value" id="specLentes">Verde</span>
+                </div>
+                <div class="pd__lens-options" id="lensOptions" style="display:none">
+                    <!-- botones de lente generados por JS -->
+                </div>
+                <div id="colorWarning" style="display:none; color:#c0392b; font-weight:700; font-size:0.78rem; letter-spacing:0.08em; text-transform:uppercase; padding: 0.5rem 0 0.25rem;"></div>
+                <div class="pd__spec-divider"></div>
+                <div class="pd__spec-row">
+                    <span class="pd__spec-label">Protección</span>
+                    <span class="pd__spec-value">UV400 Certificada</span>
+                </div>
+            </div>
+
+            <!-- Variantes desde admin (cuadraditos de color) -->
+            <div id="pdVariants" style="display:none; margin: 1rem 0 0.5rem;">
+                <p class="pd__section-label" id="pdVariantsLabel">Variantes disponibles</p>
+                <div id="pdVariantsGrid" style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.55rem;"></div>
+            </div>
+
+            <!-- Selector Normal / Polarizado (solo aparece si el producto tiene versión polarizada) -->
+            <div id="pdPolarizedToggle" style="display:none; margin: 0.75rem 0 0.5rem;">
+                <p class="pd__section-label">Tipo de lente</p>
+                <div style="display:flex;gap:0.5rem;margin-top:0.55rem;">
+                    <button onclick="setPolarizedMode(false)" id="pdBtnNormal" class="pd__pol-btn pd__pol-btn--active">Normal</button>
+                    <button onclick="setPolarizedMode(true)"  id="pdBtnPol"    class="pd__pol-btn">Polarizado</button>
+                </div>
+            </div>
+
+            <!-- Talla -->
+            <div class="pd__section">
+                <p class="pd__section-label">Talla</p>
+                <div class="pd__sizes">
+                    <button class="pd__size pd__size--active">Cargando...</button>
+                </div>
+            </div>
+
+            <!-- Precio -->
+            <div class="pd__price-row">
+                <span class="pd__price">$ —</span>
+                <span class="pd__price-note">Precio final con IVA incluido</span>
+            </div>
+
+            <!-- CTA principal: WhatsApp -->
+            <button onclick="comprarPorWhatsApp()" class="btn btn--dark pd__cta" id="ctaWA" style="width:100%;cursor:pointer;background:#25D366;display:flex;align-items:center;justify-content:center;gap:0.5rem;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                    <path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.533 5.859L.057 23.408a.75.75 0 0 0 .916.938l5.688-1.49A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.708 9.708 0 0 1-4.953-1.355l-.355-.212-3.68.964.982-3.588-.231-.369A9.718 9.718 0 0 1 2.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"/>
+                </svg>
+                Comprar por WhatsApp
+            </button>
+
+            <!-- Acordeón de detalles -->
+            <div class="pd__accordion">
+
+                <div class="pd__acc-item">
+                    <button class="pd__acc-btn" aria-expanded="false">
+                        <span>Descripción del producto</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                    <div class="pd__acc-body">
+                        <p>El Wayfarer Clásico es el modelo de lentes de sol más icónico de todos los tiempos. Lanzado en 1956, revolucionó la industria con su diseño de acetato en forma trapezoidal. Usado por generaciones de íconos culturales, sigue siendo la elección de quienes valoran lo auténtico.</p>
+                    </div>
+                </div>
+
+                <div class="pd__acc-item">
+                    <button class="pd__acc-btn" aria-expanded="false">
+                        <span>Envíos y devoluciones</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                    <div class="pd__acc-body">
+                        <p>Envío con seguimiento en tiempo real. Embalaje premium. Devoluciones aceptadas dentro de los 30 días posteriores a la compra en perfectas condiciones.</p>
+                    </div>
+                </div>
+
+                <div class="pd__acc-item">
+                    <button class="pd__acc-btn" aria-expanded="false">
+                        <span>Garantía y autenticidad</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </button>
+                    <div class="pd__acc-body">
+                        <p>Todos los productos ZEVOR son 100% originales Ray-Ban, adquiridos directamente al fabricante. Incluyen estuche original, paño de limpieza y garantía oficial.</p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<!-- FOOTER -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer__grid">
+            <div class="footer__brand">
+                <span class="footer__brand-logo">ZEVOR</span>
+                <p class="footer__brand-line">La diferencia no se explica.<br>Se lleva puesta.</p>
+            </div>
+            <div class="footer__newsletter">
+                <span class="footer__section-title">Acceso Exclusivo</span>
+                <p class="footer__newsletter-desc">Sé el primero en enterarte de novedades y lanzamientos exclusivos.</p>
+                <form class="newsletter-form" onsubmit="return false;">
+                    <input type="email" class="newsletter-form__input" placeholder="Tu correo electrónico" autocomplete="email">
+                    <button type="submit" class="newsletter-form__btn">→</button>
+                </form>
+            </div>
+            <div class="footer__info">
+                <span class="footer__section-title">Información</span>
+                <ul class="footer__links-list">
+                    <li><a href="#">Contáctanos</a></li>
+                    <li><a href="#">Envíos y Devoluciones</a></li>
+                    <li><a href="#">Autenticidad</a></li>
+                    <li><a href="#">Preguntas Frecuentes</a></li>
+                </ul>
+            </div>
+            <div class="footer__social">
+                <span class="footer__section-title">Síguenos</span>
+                <div class="social-row">
+                    <a href="https://www.instagram.com/zevorstore_/" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="Instagram">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+                            <rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+                        </svg>
+                    </a>
+                    <a href="https://www.tiktok.com/@zevor_store" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="TikTok">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+                            <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/>
+                        </svg>
+                    </a>
+                    <a href="https://wa.me/5492604367870" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="WhatsApp">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+                            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="footer__bar">
+            <p>&copy; 2026 ZEVOR. Todos los derechos reservados.</p>
+            <p>Diseñado para quienes eligen la diferencia.</p>
+        </div>
+    </div>
+</footer>
+
+<script src="init-data.js"></script>
+<script>
+    // Navbar
+    const burgerBtn    = document.getElementById('burgerBtn');
+    const mobileDrawer = document.getElementById('mobileDrawer');
+    burgerBtn.addEventListener('click', () => {
+        const isOpen = mobileDrawer.classList.toggle('nav__drawer--open');
+        burgerBtn.classList.toggle('nav__burger--open', isOpen);
+        burgerBtn.setAttribute('aria-expanded', isOpen);
+    });
+
+    // Datos por color: cada entry tiene marco + lensOptions (array de opciones de lente)
+    const colorData = [
+        {
+            marco: 'Negro pulido',
+            lensOptions: [
+                { color: 'Verde',        images: ['Wayfarer/wy (3).avif','Wayfarer/wy (4).avif','Wayfarer/wy (5).avif','Wayfarer/wy (6).avif'] },
+                { color: 'Gris degradé', images: ['Wayfarer/Wayfarer Negro,Gris degradé 1.webp','Wayfarer/Wayfarer Negro,Gris degradé 2.webp','Wayfarer/Wayfarer Negro,Gris degradé 3.webp','Wayfarer/Wayfarer Negro,Gris degradé 4.webp'] },
+            ]
+        },
+        {
+            marco: 'Negro mate',
+            lensOptions: [
+                { color: 'Verde', images: ['Wayfarer/wy mate 1.avif','Wayfarer/wy mate 2.avif','Wayfarer/wy mate 3.avif','Wayfarer/wy mate 4.avif'] },
+            ]
+        },
+        {
+            marco: 'Carey',
+            lensOptions: [
+                { color: 'Marrón degradé', images: ['Wayfarer/carey 1.avif','Wayfarer/carey 2.avif','Wayfarer/carey 3.avif','Wayfarer/carey 4.avif'] },
+                { color: 'Verde',          images: ['Wayfarer/wayfarer carey, verde 1.avif','Wayfarer/wayfarer carey, verde 2.avif','Wayfarer/wayfarer carey, verde 3.avif','Wayfarer/wayfarer carey, verde 4.avif'] },
+            ]
+        },
+        {
+            marco: 'Lighting Carey',
+            lensOptions: [
+                { color: 'Marrón', images: [
+                    'Wayfarer/Lighting Carey, marron 1.avif',
+                    'Wayfarer/Lighting Carey, marron 2.avif',
+                    'Wayfarer/Lighting Carey, marron  3.avif',
+                    'Wayfarer/Lighting Carey, marron 4.avif',
+                ]},
+            ]
+        },
+        {
+            marco: 'Azul transparente',
+            warning: 'NO VIENEN CON CORREA',
+            lensOptions: [
+                { color: 'Rojo oscuro', images: [
+                    'Wayfarer/Azul transparente, rojo oscuro 1.webp',
+                    'Wayfarer/Azul transparente, rojo oscuro 2.webp',
+                    'Wayfarer/Azul transparente, rojo oscuro 3.webp',
+                    'Wayfarer/Azul transparente, rojo oscuro 4.webp',
+                ]},
+            ]
+        },
+        {
+            marco: 'Violeta transparente',
+            warning: 'NO VIENEN CON CORREA',
+            lensOptions: [
+                { color: 'Naranja', images: [
+                    'Wayfarer/Violeta transparente, naranja  1.avif',
+                    'Wayfarer/Violeta transparente, naranja 2.avif',
+                    'Wayfarer/Violeta transparente, naranja 3.avif',
+                    'Wayfarer/Violeta transparente, naranja 4.avif',
+                ]},
+            ]
+        },
+        {
+            marco: 'Verde translúcido',
+            lensOptions: [
+                { color: 'Translúcido verde', images: ['Wayfarer/tanslucido verde,verde 2.webp','Wayfarer/tanslucido verde,verde 1.webp','Wayfarer/tanslucido verde,verde 3.webp','Wayfarer/tanslucido verde,verde 4.webp'] },
+            ]
+        },
+    ];
+
+    const PLACEHOLDER = ['Wayfarer/wy (3).avif'];
+
+    let currentFrameIdx = 0;
+    let currentLensIdx  = 0;
+
+    function getLensImages(frameIdx, lensIdx) {
+        const imgs = colorData[frameIdx].lensOptions[lensIdx].images;
+        return imgs.length ? imgs : PLACEHOLDER;
+    }
+
+    // Color de swatch por nombre de lente
+    function lensSwatchStyle(color) {
+        const map = {
+            'Verde':             'background:#2E7D32',
+            'Gris degradé':      'background:linear-gradient(135deg,#555,#bbb)',
+            'Marrón degradé':    'background:linear-gradient(135deg,#5C3A1E,#C49A6C)',
+            'Translúcido verde': 'background:rgba(46,125,50,0.55)',
+            'Gris':              'background:#888',
+            'Rojo oscuro':       'background:#7B1A1A',
+            'Naranja':           'background:#E07020',
+        };
+        return map[color] || 'background:#ccc';
+    }
+
+    function renderLensOptions(frameIdx) {
+        const lensOpts  = colorData[frameIdx].lensOptions;
+        const container = document.getElementById('lensOptions');
+        if (lensOpts.length <= 1) {
+            container.style.display = 'none';
+            return;
+        }
+        container.style.display = '';
+        container.innerHTML = '';
+        lensOpts.forEach((lens, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'pd__lens-btn' + (i === currentLensIdx ? ' pd__lens-btn--active' : '');
+            btn.title = lens.color;
+            btn.setAttribute('aria-label', lens.color);
+            btn.innerHTML = `<div class="pd__lens-swatch" style="${lensSwatchStyle(lens.color)}"></div>`;
+            btn.addEventListener('click', () => selectLens(i));
+            container.appendChild(btn);
+        });
+    }
+
+    function selectLens(lensIdx) {
+        currentLensIdx = lensIdx;
+        const lensOpts = colorData[currentFrameIdx].lensOptions;
+        document.getElementById('specLentes').textContent = lensOpts[lensIdx].color;
+        document.querySelectorAll('.pd__lens-btn').forEach((b, i) =>
+            b.classList.toggle('pd__lens-btn--active', i === lensIdx)
+        );
+        images.length = 0;
+        getLensImages(currentFrameIdx, lensIdx).forEach(src => images.push(src));
+        currentSlide = 0;
+        updateMainAndThumbs();
+    }
+
+    function updateWarning(idx) {
+        const el = document.getElementById('colorWarning');
+        const w  = colorData[idx].warning;
+        if (w) { el.textContent = w; el.style.display = ''; }
+        else    { el.style.display = 'none'; }
+    }
+
+    document.querySelectorAll('.pd__color').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const idx = parseInt(btn.dataset.color);
+            currentFrameIdx = idx;
+            currentLensIdx  = 0;
+            document.querySelectorAll('.pd__color').forEach(b => b.classList.remove('pd__color--active'));
+            btn.classList.add('pd__color--active');
+            document.getElementById('specMarco').textContent  = colorData[idx].marco;
+            document.getElementById('specLentes').textContent = colorData[idx].lensOptions[0].color;
+            renderLensOptions(idx);
+            updateWarning(idx);
+            images.length = 0;
+            getLensImages(idx, 0).forEach(src => images.push(src));
+            currentSlide = 0;
+            updateMainAndThumbs();
+        });
+    });
+
+    // Selector de talla
+    document.querySelectorAll('.pd__size').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.pd__size').forEach(b => b.classList.remove('pd__size--active'));
+            btn.classList.add('pd__size--active');
+        });
+    });
+
+    // Acordeón
+    document.querySelectorAll('.pd__acc-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const isOpen = btn.getAttribute('aria-expanded') === 'true';
+            btn.setAttribute('aria-expanded', !isOpen);
+            btn.parentElement.classList.toggle('pd__acc-item--open', !isOpen);
+        });
+    });
+
+    // Lightbox — array mutable para que el cambio de color lo actualice
+    const images      = [...colorData[0].lensOptions[0].images];
+    let currentSlide  = 0;
+    const lightbox    = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightboxImg');
+    const mainImg     = document.getElementById('mainImg');
+    const dotsWrap    = document.getElementById('lightboxDots');
+    const thumbBtns   = document.querySelectorAll('.pd__thumb');
+
+    function buildDots() {
+        dotsWrap.innerHTML = '';
+        for (let i = 0; i < images.length; i++) {
+            const d = document.createElement('button');
+            d.className = 'lightbox__dot' + (i === 0 ? ' lightbox__dot--active' : '');
+            d.setAttribute('aria-label', `Ir a imagen ${i + 1}`);
+            d.addEventListener('click', () => goTo(i));
+            dotsWrap.appendChild(d);
+        }
+    }
+    buildDots();
+
+    function updateMainAndThumbs() {
+        mainImg.src = images[0];
+        thumbBtns.forEach((btn, i) => {
+            const img = btn.querySelector('img');
+            if (images[i]) {
+                img.src = images[i];
+                btn.style.display = '';
+            } else {
+                btn.style.display = 'none';
+            }
+            btn.classList.toggle('pd__thumb--active', i === 0);
+        });
+        currentSlide = 0;
+        buildDots();
+    }
+
+    function goTo(n) {
+        currentSlide = (n + images.length) % images.length;
+        lightboxImg.src = images[currentSlide];
+        dotsWrap.querySelectorAll('.lightbox__dot').forEach((d, i) =>
+            d.classList.toggle('lightbox__dot--active', i === currentSlide)
+        );
+    }
+
+    function selectThumb(n, btn) {
+        if (!images[n]) return;
+        currentSlide = n;
+        mainImg.src = images[n];
+        thumbBtns.forEach(b => b.classList.remove('pd__thumb--active'));
+        btn.classList.add('pd__thumb--active');
+    }
+
+    function openLightbox() {
+        lightbox.classList.add('lightbox--open');
+        document.body.style.overflow = 'hidden';
+        goTo(currentSlide);
+    }
+
+    function closeLightbox() {
+        lightbox.classList.remove('lightbox--open');
+        document.body.style.overflow = '';
+    }
+
+    document.getElementById('mainImgWrap').addEventListener('click', openLightbox);
+    document.getElementById('mainImgWrap').addEventListener('keydown', e => { if (e.key === 'Enter') openLightbox(); });
+    document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+    document.getElementById('lightboxPrev').addEventListener('click', () => goTo(currentSlide - 1));
+    document.getElementById('lightboxNext').addEventListener('click', () => goTo(currentSlide + 1));
+
+    lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
+    document.addEventListener('keydown', e => {
+        if (!lightbox.classList.contains('lightbox--open')) return;
+        if (e.key === 'Escape')     closeLightbox();
+        if (e.key === 'ArrowLeft')  goTo(currentSlide - 1);
+        if (e.key === 'ArrowRight') goTo(currentSlide + 1);
+    });
+
+    // Inicializar selector de lentes para el color inicial (Negro pulido)
+    renderLensOptions(0);
+
+    /* ── CARGA DINÁMICA DESDE ADMIN ──────────────────────────
+       Lee ?id=X de la URL, busca el producto en localStorage
+       y sobreescribe título, imágenes, colores, precio y breadcrumb.
+       ─────────────────────────────────────────────────────── */
+    (function loadProductFromAdmin() {
+      const params = new URLSearchParams(location.search);
+      const id = params.get('id');
+      if (!id) return;
+
+      let products;
+      try {
+        const raw = localStorage.getItem('zv_products');
+        if (!raw) return;
+        products = JSON.parse(raw);
+      } catch { return; }
+
+      const p = products.find(x => String(x.id) === id);
+      if (!p) return;
+
+      /* Título de pestaña y heading */
+      document.title = p.name + ' — Ray-Ban | ZEVOR';
+      document.querySelector('.pd__name').textContent = p.name;
+
+      /* Precio */
+      if (p.price) {
+        document.querySelector('.pd__price').textContent =
+          '$' + Number(p.price).toLocaleString('es-AR');
+      }
+
+      /* Marco y lente */
+      if (p.frameColor) document.getElementById('specMarco').textContent = p.frameColor;
+      if (p.lensColor)  document.getElementById('specLentes').textContent = p.lensColor;
+
+      /* Ocultar selector de colores (es específico del Wayfarer hardcodeado) */
+      const colorSection = document.querySelector('.pd__section');
+      if (colorSection) colorSection.style.display = 'none';
+      document.getElementById('lensOptions').style.display = 'none';
+
+      /* Breadcrumb */
+      const breadLinks = document.querySelectorAll('.breadcrumb a');
+      if (breadLinks[2]) {
+        breadLinks[2].href = (p.category || 'catalogo').toLowerCase() + '.html';
+        breadLinks[2].textContent = p.category || 'Ray-Ban';
+      }
+      const breadCurrent = document.querySelector('.breadcrumb__current');
+      if (breadCurrent) breadCurrent.textContent = p.name;
+
+      /* Imágenes: tomar las 4 del array images[], filtrar vacías */
+      const imgs = (p.images || []).filter(Boolean);
+      if (!imgs.length && p.image) imgs.push(p.image);
+
+      /* Calcular fotos polarizadas antes del return para manejar productos solo-polarizados */
+      const polImgs = Array.isArray(p.imagesPolarized) ? p.imagesPolarized.filter(Boolean) : [];
+
+      /* Si no hay ninguna imagen (ni regular ni polarizada), salir */
+      if (!imgs.length && !polImgs.length && !p.polarized) return;
+
+      /* Cargar galería solo si hay fotos regulares; si no, setPolarizedMode lo hará */
+      if (imgs.length) {
+          images.length = 0;
+          imgs.forEach(src => images.push(src));
+          updateMainAndThumbs();
+          buildDots();
+      }
+
+      /* Stock — mostrar aviso si está agotado */
+      if (p.stock === 0) {
+        const ctaBtn = document.getElementById('ctaWA');
+        if (ctaBtn) {
+          ctaBtn.innerHTML = 'Sin stock disponible';
+          ctaBtn.disabled = true;
+          ctaBtn.style.opacity = '0.45';
+          ctaBtn.style.cursor = 'not-allowed';
+          ctaBtn.style.background = '#888';
+        }
+      }
+
+      /* Tallas según categoría */
+      const TALLAS = {
+        'Wayfarer':         ['50mm — Estándar', '54mm — Large'],
+        'Wayfarer Reverse': ['53mm — Estándar'],
+        'Zuri':             ['54mm — Estándar'],
+        'Justin':           ['54mm — Estándar'],
+        'Erika':            ['54mm — Estándar'],
+        'Emy':              ['56mm — Estándar'],
+        'Clubmaster':       ['51mm — Estándar'],
+        'Lady Burbank':     ['52mm — Estándar'],
+        'Bill':             ['60mm — Estándar'],
+        'Aviator':          ['55mm — Estándar'],
+        'Corrigan':         ['54mm — Estándar'],
+        'Hawkeye':          ['52mm — Estándar'],
+      };
+      /* Ferrari: detectar por nombre (incluye variantes como RB3703M) */
+      const TALLAS_FERRARI = {
+        'RB3703': ['51mm — Estándar'],
+        'RB4414': ['58mm — Estándar'],
+        'RB2217': ['53mm — Estándar'],
+        'RB4413': ['57mm — Estándar'],
+      };
+      let tallasCategoria;
+      const nombreUpper = (p.name || '').toUpperCase();
+      const ferrariKey = Object.keys(TALLAS_FERRARI).find(k => nombreUpper.includes(k));
+      if (ferrariKey) {
+        tallasCategoria = TALLAS_FERRARI[ferrariKey];
+      } else if (nombreUpper.includes('WAYFARER REVERSE')) {
+        tallasCategoria = TALLAS['Wayfarer Reverse'];
+      } else {
+        tallasCategoria = TALLAS[p.category];
+      }
+      const sizesWrap = document.querySelector('.pd__sizes');
+      if (sizesWrap) {
+        if (tallasCategoria && tallasCategoria.length) {
+          sizesWrap.innerHTML = tallasCategoria.map((t, i) =>
+            `<button class="pd__size${i === 0 ? ' pd__size--active' : ''}">${t}</button>`
+          ).join('');
+        } else {
+          /* Sin talla configurada: ocultar la sección */
+          sizesWrap.closest('.pd__section') && (sizesWrap.closest('.pd__section').style.display = 'none');
+        }
+        sizesWrap.querySelectorAll('.pd__size').forEach(btn => {
+          btn.addEventListener('click', () => {
+            sizesWrap.querySelectorAll('.pd__size').forEach(b => b.classList.remove('pd__size--active'));
+            btn.classList.add('pd__size--active');
+          });
+        });
+      }
+
+      /* Guardar el producto activo para el carrito */
+      window.__activeProduct = p;
+
+      /* Botón Polarizados: mostrar si tiene flag polarized O tiene fotos polarizadas */
+      if (p.polarized || polImgs.length) {
+          window.__normalImgs = [...imgs];
+          window.__polImgs    = polImgs;
+          document.getElementById('pdPolarizedToggle').style.display = '';
+          /* Si no hay fotos regulares pero sí polarizadas, activar modo polarizado por defecto */
+          if (!imgs.length && polImgs.length) {
+              setPolarizedMode(true);
+          }
+      }
+
+      /* Variantes: buscar hermanos del mismo padre */
+      (function renderVariants() {
+        const parentId = p.parentId != null ? p.parentId : p.id;
+        const parent   = p.parentId != null ? products.find(x => x.id === p.parentId) : p;
+        const siblings = products.filter(x => x.parentId === parentId);
+        const all      = [parent, ...siblings].filter(Boolean);
+        if (all.length < 2) return;
+
+        const section = document.getElementById('pdVariants');
+        const label   = document.getElementById('pdVariantsLabel');
+        const grid    = document.getElementById('pdVariantsGrid');
+        label.textContent = 'Diseño y Color — ' + all.length + ' variantes';
+        grid.innerHTML = all.map(v => {
+          const img      = (v.images && v.images[0]) || v.image || (v.imagesPolarized && v.imagesPolarized[0]) || '';
+          const isActive = String(v.id) === id;
+          const colorLabel = [v.frameColor, v.lensColor].filter(Boolean).join(' / ') || v.name;
+          return `<a href="producto.html?id=${v.id}"
+              class="pd__variant-btn${isActive ? ' pd__variant-btn--active' : ''}"
+              title="${colorLabel.replace(/"/g,'&quot;')}">
+              ${img
+                ? `<img src="${img}" alt="${colorLabel.replace(/"/g,'&quot;')}">`
+                : `<span class="pd__variant-noimg">?</span>`}
+            </a>`;
+        }).join('');
+        section.style.display = '';
+      })();
+    })();
+
+    /* ── COMPRAR POR WHATSAPP ── */
+    function comprarPorWhatsApp() {
+        const ap     = window.__activeProduct;
+        const talla  = document.querySelector('.pd__size--active')?.textContent?.trim() || '50mm';
+        const nombre = ap ? ap.name : document.querySelector('.pd__name')?.textContent || 'Ray-Ban';
+        const marco  = ap?.frameColor  || document.getElementById('specMarco')?.textContent  || '';
+        const lentes = ap?.lensColor   || document.getElementById('specLentes')?.textContent || '';
+        const precio = ap?.price ? '$' + Number(ap.price).toLocaleString('es-AR') : '';
+
+        const lineas = [
+            '👓 *Consulta de compra — ZEVOR*',
+            '',
+            `*Producto:* ${nombre}`,
+            marco  ? `*Marco:* ${marco}`   : '',
+            lentes ? `*Lentes:* ${lentes}` : '',
+            `*Talla:* ${talla}`,
+            precio ? `*Precio:* ${precio}` : '',
+            '',
+            '¡Hola! Quiero comprar este modelo. ¿Pueden ayudarme?'
+        ].filter(l => l !== null).join('\n');
+
+        const url = 'https://wa.me/542604367870?text=' + encodeURIComponent(lineas);
+        window.open(url, '_blank');
+    }
+
+    /* ── TOGGLE NORMAL / POLARIZADO ── */
+    function setPolarizedMode(isPol) {
+        const src = isPol ? window.__polImgs : window.__normalImgs;
+        if (!src || !src.length) return;
+
+        /* Imágenes */
+        images.length = 0;
+        src.forEach(s => images.push(s));
+        updateMainAndThumbs();
+        buildDots();
+
+        /* Precio */
+        const ap = window.__activeProduct;
+        const priceEl = document.querySelector('.pd__price');
+        if (priceEl && ap) {
+            const precio = isPol && ap.pricePolarized ? ap.pricePolarized : ap.price;
+            priceEl.textContent = '$' + Number(precio).toLocaleString('es-AR');
+        }
+
+        /* Botones */
+        document.getElementById('pdBtnNormal').classList.toggle('pd__pol-btn--active', !isPol);
+        document.getElementById('pdBtnPol').classList.toggle('pd__pol-btn--active', isPol);
+    }
+
+    /* ── DROPDOWN RAY-BAN EN NAV ── */
+    (function() {
+        var menu    = document.getElementById('heroMenu');
+        var navLink = document.querySelector('a.nav__link[href="catalogo.html"]');
+        var _t      = null;
+
+        function show() { clearTimeout(_t); menu.style.display = 'block'; }
+        function hide() { _t = setTimeout(function() { menu.style.display = 'none'; }, 150); }
+
+        if (navLink) {
+            navLink.addEventListener('mouseenter', show);
+            navLink.addEventListener('mouseleave', hide);
+        }
+        menu.addEventListener('mouseenter', show);
+        menu.addEventListener('mouseleave', hide);
+
+        /* Categorías dinámicas desde localStorage */
+        var cats = JSON.parse(localStorage.getItem('zv_categories') || '["Wayfarer","Wayfarer Reverse","Aviator","Clubmaster","Justin","Erika","Emy","Zuri","Lady Burbank","Bill","Corrigan","Hawkeye","Ferrari"]');
+        var nav  = document.getElementById('heroCatLinks');
+        var pol  = nav.lastElementChild;
+        cats.forEach(function(cat) {
+            var a = document.createElement('a');
+            a.href      = 'catalogo.html?cat=' + encodeURIComponent(cat);
+            a.className = 'hero-menu__link';
+            a.textContent = cat;
+            nav.insertBefore(a, pol);
+        });
+    })();
+
+    /* cart.js cargado abajo — disponible en DOMContentLoaded */
+    function addToCart() {
+        const ap      = window.__activeProduct;
+        const marco   = ap ? (ap.frameColor || colorData[currentFrameIdx].marco) : colorData[currentFrameIdx].marco;
+        const lentes  = ap ? (ap.lensColor  || colorData[currentFrameIdx].lensOptions[currentLensIdx].color) : colorData[currentFrameIdx].lensOptions[currentLensIdx].color;
+        const variant = [marco, lentes].filter(Boolean).join(' / ');
+        const img     = images[0] || '';
+        const item = {
+            id:      ap ? String(ap.id) : ('prod_' + Date.now()),
+            name:    ap ? ap.name : 'Wayfarer Clásico Original',
+            price:   ap ? (ap.price || 0) : 0,
+            img:     img,
+            variant: variant
+        };
+        if (window.ZV_CART) {
+            ZV_CART.addItem(item);
+        }
+        window.location.href = 'carrito.html';
+    }
+</script>
+<script src="cart.js"></script>
+</body>
+</html>

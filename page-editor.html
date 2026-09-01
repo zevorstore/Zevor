@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editor de Contenido — ZEVOR</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, -apple-system, sans-serif; background: #09090b; }
+    #panel { display: none; background: #f8f8f8; min-height: 100vh; }
+    input[type=range] { accent-color: #b45309; width: 100%; }
+    input[type=color] { -webkit-appearance: none; border: none; background: none; cursor: pointer; width: 2.5rem; height: 2.5rem; border-radius: 6px; overflow: hidden; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════
+     LOGIN — 100% vanilla JS, sin Vue
+═══════════════════════════════════ -->
+<div id="login-screen" class="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
+  <div class="w-full max-w-sm">
+    <div class="text-center mb-10">
+      <p class="text-white font-light tracking-[0.55em] text-3xl">ZEVOR</p>
+      <div class="w-8 h-px bg-yellow-700 mx-auto my-3"></div>
+      <p class="text-zinc-500 text-xs tracking-[0.25em] uppercase">Editor de Contenido</p>
+    </div>
+    <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-8">
+      <p class="text-zinc-300 text-sm font-medium mb-6">Ingresa tu contraseña</p>
+      <form id="login-form" class="space-y-4">
+        <div>
+          <label class="text-zinc-500 text-xs tracking-widest uppercase block mb-2">Contraseña</label>
+          <input id="pw-input" type="password" autofocus
+            class="w-full bg-zinc-800 border border-zinc-700 text-white rounded-xl px-4 py-3 text-sm outline-none focus:border-yellow-600"
+            placeholder="••••••••" />
+        </div>
+        <p id="login-error" class="text-red-400 text-xs hidden">Contraseña incorrecta. Intentá de nuevo.</p>
+        <button type="submit"
+          class="w-full bg-yellow-700 hover:bg-yellow-600 text-white py-3 rounded-xl text-xs tracking-widest uppercase font-semibold cursor-pointer">
+          Ingresar al editor
+        </button>
+      </form>
+    </div>
+    <p class="text-center text-zinc-700 text-xs mt-6">© 2026 ZEVOR — Solo administradores</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     PANEL DE EDICIÓN
+═══════════════════════════════════ -->
+<div id="panel">
+
+  <!-- Sidebar -->
+  <div style="display:flex; min-height:100vh;">
+    <aside id="sidebar" style="width:240px; background:#09090b; display:flex; flex-direction:column; flex-shrink:0;">
+      <div style="padding:1.5rem; border-bottom:1px solid #27272a;">
+        <p style="color:#fff; font-weight:300; letter-spacing:0.4em; font-size:1.25rem; margin:0;">ZEVOR</p>
+        <p style="color:#52525b; font-size:0.65rem; letter-spacing:0.25em; margin:0.25rem 0 0;">EDITOR</p>
+      </div>
+      <nav style="flex:1; padding:1rem 0.75rem;">
+        <p style="color:#52525b; font-size:0.65rem; letter-spacing:0.2em; text-transform:uppercase; padding:0 0.75rem; margin-bottom:0.75rem;">Secciones</p>
+        <button class="nav-btn active-nav" data-page="hero" onclick="showPage('hero', this)">🏠 Hero Principal</button>
+        <button class="nav-btn" data-page="sections" onclick="showPage('sections', this)">📄 Secciones</button>
+        <button class="nav-btn" data-page="footer" onclick="showPage('footer', this)">📋 Footer</button>
+        <div style="margin-top:1rem; padding:0 0.75rem;">
+          <a href="index.html" target="_blank" class="nav-btn" style="display:block; text-decoration:none;">🌐 Ver sitio</a>
+        </div>
+      </nav>
+      <div style="padding:0.75rem; border-top:1px solid #27272a;">
+        <div id="save-indicator" style="display:flex; align-items:center; gap:0.5rem; padding:0.5rem 0.75rem; margin-bottom:0.25rem;">
+          <div id="save-dot" style="width:8px; height:8px; border-radius:50%; background:#22c55e; flex-shrink:0;"></div>
+          <span id="save-text" style="color:#52525b; font-size:0.72rem;">Guardado</span>
+        </div>
+        <button onclick="doLogout()" class="nav-btn">🚪 Cerrar sesión</button>
+      </div>
+    </aside>
+
+    <!-- Contenido principal -->
+    <div style="flex:1; display:flex; flex-direction:column; min-width:0;">
+
+      <!-- Topbar -->
+      <header style="background:#fff; border-bottom:1px solid #f0f0f0; padding:1rem 1.25rem; display:flex; align-items:center; gap:1rem; position:sticky; top:0; z-index:10;">
+        <p id="topbar-title" style="font-size:0.875rem; font-weight:500; color:#374151; margin:0; flex:1;">Hero Principal</p>
+        <button onclick="saveNow()" style="background:#18181b; color:#fff; border:none; padding:0.5rem 1rem; border-radius:0.75rem; font-size:0.75rem; font-weight:500; cursor:pointer;">
+          💾 Guardar ahora
+        </button>
+      </header>
+
+      <!-- HERO PAGE -->
+      <main id="page-hero" class="page-content" style="padding:2rem; max-width:720px;">
+        <h2 style="font-size:1.25rem; font-weight:300; color:#111; margin-bottom:0.25rem;">Hero Principal</h2>
+        <p style="font-size:0.875rem; color:#9ca3af; margin-bottom:1.5rem;">Sección de inicio de la página principal</p>
+
+        <div class="card">
+          <p class="card-label">Textos</p>
+          <label class="field-label">Eslogan (texto bajo el logo)</label>
+          <input class="field-input" id="hero-title" type="text" placeholder="Ej: La diferencia no se explica. Se lleva puesta." oninput="scheduleSave()" />
+          <p style="font-size:0.7rem;color:#9ca3af;margin:0.25rem 0 0;">Actualmente: "La diferencia no se explica. Se lleva puesta."</p>
+          <label class="field-label" style="margin-top:1rem;">Texto del botón principal</label>
+          <input class="field-input" id="hero-cta-text" type="text" placeholder="Ej: Descubrir la Colección" oninput="scheduleSave()" />
+          <label class="field-label" style="margin-top:1rem;">Link del botón principal</label>
+          <input class="field-input" id="hero-cta-link" type="text" placeholder="Ej: catalogo.html" oninput="scheduleSave()" />
+        </div>
+
+        <div class="card" style="margin-top:1rem;">
+          <p class="card-label">Imagen de fondo</p>
+          <div style="display:flex; gap:1rem; align-items:flex-start;">
+            <div id="hero-img-preview" style="width:96px; height:96px; border-radius:0.75rem; background:#f3f4f6; border:1px solid #e5e7eb; flex-shrink:0; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+              <span style="color:#d1d5db; font-size:0.75rem; text-align:center; padding:0.5rem;">Sin imagen</span>
+            </div>
+            <div style="flex:1;">
+              <label style="display:flex; align-items:center; justify-content:center; border:1px solid #e5e7eb; border-radius:0.75rem; padding:0.625rem; font-size:0.875rem; cursor:pointer; color:#4b5563;" onmouseover="this.style.borderColor='#d97706'" onmouseout="this.style.borderColor='#e5e7eb'">
+                📷 Subir imagen de fondo
+                <input type="file" accept="image/*" style="display:none;" onchange="uploadHeroImage(this)" />
+              </label>
+              <button onclick="clearHeroImage()" id="hero-img-remove" style="display:none; width:100%; margin-top:0.5rem; background:none; border:none; color:#f87171; font-size:0.75rem; cursor:pointer;">Quitar imagen</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:1rem;">
+          <p class="card-label">Color de fondo</p>
+          <p style="font-size:0.75rem; color:#9ca3af; margin-bottom:0.75rem;">Se usa cuando no hay imagen de fondo.</p>
+          <div style="display:flex; align-items:center; gap:0.75rem;">
+            <input type="color" id="hero-bg-color" value="#000000" onchange="scheduleSave()" oninput="syncColorText()" />
+            <input class="field-input" id="hero-bg-text" type="text" value="#000000" placeholder="#000000" oninput="syncColorPicker()" style="font-family:monospace;" />
+          </div>
+        </div>
+      </main>
+
+      <!-- SECTIONS PAGE -->
+      <main id="page-sections" class="page-content" style="padding:2rem; display:none;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.5rem; max-width:720px;">
+          <div>
+            <h2 style="font-size:1.25rem; font-weight:300; color:#111; margin-bottom:0.25rem;">Secciones de Contenido</h2>
+            <p id="sections-count" style="font-size:0.875rem; color:#9ca3af;">0 bloques configurados</p>
+          </div>
+          <button onclick="openNewSection()" style="background:#18181b; color:#fff; border:none; padding:0.625rem 1rem; border-radius:0.75rem; font-size:0.875rem; font-weight:500; cursor:pointer;">+ Agregar bloque</button>
+        </div>
+        <div id="sections-list" style="max-width:720px; display:flex; flex-direction:column; gap:1rem;"></div>
+      </main>
+
+      <!-- FOOTER PAGE -->
+      <main id="page-footer" class="page-content" style="padding:2rem; max-width:720px; display:none;">
+        <h2 style="font-size:1.25rem; font-weight:300; color:#111; margin-bottom:0.25rem;">Footer</h2>
+        <p style="font-size:0.875rem; color:#9ca3af; margin-bottom:1.5rem;">Pie de página del sitio</p>
+
+        <div class="card">
+          <p class="card-label">Textos</p>
+          <label class="field-label">Frase de marca</label>
+          <textarea class="field-input" id="footer-brand" rows="2" placeholder="La diferencia no se explica. Se lleva puesta." oninput="scheduleSave()" style="resize:none;"></textarea>
+          <label class="field-label" style="margin-top:1rem;">Texto del newsletter</label>
+          <input class="field-input" id="footer-newsletter" type="text" placeholder="Sé el primero en enterarte..." oninput="scheduleSave()" />
+          <label class="field-label" style="margin-top:1rem;">Copyright</label>
+          <input class="field-input" id="footer-copyright" type="text" placeholder="© 2026 ZEVOR. Todos los derechos reservados." oninput="scheduleSave()" />
+        </div>
+
+        <div class="card" style="margin-top:1rem;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
+            <p class="card-label" style="margin:0;">Redes Sociales</p>
+            <button onclick="addSocial()" style="background:none; border:none; color:#b45309; font-size:0.75rem; font-weight:600; cursor:pointer;">+ Agregar red</button>
+          </div>
+          <div id="social-list"></div>
+        </div>
+
+        <div class="card" style="margin-top:1rem;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
+            <p class="card-label" style="margin:0;">Links de Información</p>
+            <button onclick="addInfoLink()" style="background:none; border:none; color:#b45309; font-size:0.75rem; font-weight:600; cursor:pointer;">+ Agregar link</button>
+          </div>
+          <div id="info-links-list"></div>
+        </div>
+      </main>
+
+    </div>
+  </div>
+</div><!-- /panel -->
+
+<!-- Modal: bloque de sección -->
+<div id="section-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:50; align-items:center; justify-content:center; padding:1rem;">
+  <div style="background:#fff; border-radius:1rem; width:100%; max-width:520px; max-height:90vh; display:flex; flex-direction:column; box-shadow:0 25px 50px rgba(0,0,0,0.3);">
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:1rem 1.5rem; border-bottom:1px solid #f0f0f0; flex-shrink:0;">
+      <p id="modal-title" style="font-weight:600; color:#111; margin:0;">Nuevo bloque</p>
+      <button onclick="closeModal()" style="background:none; border:none; font-size:1.25rem; cursor:pointer; color:#9ca3af;">✕</button>
+    </div>
+    <div style="padding:1.5rem; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:1rem;">
+      <div>
+        <label class="field-label">Tipo de bloque</label>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; margin-top:0.5rem;">
+          <button class="type-btn active-type" data-type="text-image" onclick="selectType('text-image')">🖼 Texto + Imagen</button>
+          <button class="type-btn" data-type="text-only" onclick="selectType('text-only')">📝 Solo texto</button>
+          <button class="type-btn" data-type="video" onclick="selectType('video')">▶ Video</button>
+          <button class="type-btn" data-type="gallery" onclick="selectType('gallery')">🗃 Galería</button>
+        </div>
+      </div>
+      <div>
+        <label class="field-label">Título</label>
+        <input class="field-input" id="modal-sec-title" type="text" placeholder="Ej: La Experiencia ZEVOR" style="margin-top:0.5rem;" />
+      </div>
+      <div id="modal-desc-wrap">
+        <label class="field-label">Descripción</label>
+        <textarea class="field-input" id="modal-sec-desc" rows="3" placeholder="Texto del bloque..." style="resize:none; margin-top:0.5rem;"></textarea>
+      </div>
+      <div id="modal-img-wrap">
+        <label class="field-label">Imagen</label>
+        <div style="display:flex; gap:0.75rem; align-items:flex-start; margin-top:0.5rem;">
+          <div id="modal-img-preview" style="width:80px; height:80px; border-radius:0.75rem; background:#f3f4f6; border:1px solid #e5e7eb; flex-shrink:0; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+            <span style="color:#d1d5db; font-size:0.65rem; text-align:center;">Sin imagen</span>
+          </div>
+          <div style="flex:1;">
+            <label style="display:flex; align-items:center; justify-content:center; border:1px solid #e5e7eb; border-radius:0.75rem; padding:0.5rem; font-size:0.75rem; cursor:pointer; color:#4b5563;">
+              📷 Subir imagen
+              <input type="file" accept="image/*" style="display:none;" onchange="uploadModalImage(this)" />
+            </label>
+            <button onclick="clearModalImage()" id="modal-img-remove" style="display:none; width:100%; margin-top:0.5rem; background:none; border:none; color:#f87171; font-size:0.75rem; cursor:pointer;">Quitar imagen</button>
+          </div>
+        </div>
+        <div id="modal-img-size-wrap" style="display:none; margin-top:0.75rem;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:0.25rem;">
+            <label class="field-label" style="margin:0;">Tamaño de imagen</label>
+            <span id="modal-size-val" style="font-size:0.75rem; font-family:monospace; color:#374151;">50%</span>
+          </div>
+          <input type="range" id="modal-img-size" min="20" max="100" step="5" value="50" oninput="document.getElementById('modal-size-val').textContent=this.value+'%'" />
+        </div>
+      </div>
+      <div id="modal-video-wrap" style="display:none;">
+        <label class="field-label">URL del video</label>
+        <input class="field-input" id="modal-sec-video" type="url" placeholder="https://youtube.com/watch?v=..." style="font-family:monospace; margin-top:0.5rem;" />
+        <p style="font-size:0.75rem; color:#9ca3af; margin-top:0.25rem;">Compatible con YouTube, Vimeo y archivos .mp4 directos.</p>
+      </div>
+      <div>
+        <label class="field-label">Color de fondo (opcional)</label>
+        <div style="display:flex; align-items:center; gap:0.75rem; margin-top:0.5rem;">
+          <input type="color" id="modal-bg-color" value="#ffffff" oninput="document.getElementById('modal-bg-text').value=this.value" />
+          <input class="field-input" id="modal-bg-text" type="text" placeholder="#ffffff" style="font-family:monospace;" oninput="syncModalColorPicker()" />
+        </div>
+      </div>
+    </div>
+    <div style="display:flex; gap:0.75rem; padding:1rem 1.5rem; flex-shrink:0;">
+      <button onclick="closeModal()" style="flex:1; border:1px solid #e5e7eb; background:#fff; color:#374151; border-radius:0.75rem; padding:0.625rem; font-size:0.875rem; cursor:pointer;">Cancelar</button>
+      <button onclick="saveSection()" style="flex:1; background:#18181b; color:#fff; border:none; border-radius:0.75rem; padding:0.625rem; font-size:0.875rem; font-weight:500; cursor:pointer;" id="modal-save-btn">Agregar bloque</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: confirmar eliminar sección -->
+<div id="delete-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:50; align-items:center; justify-content:center; padding:1rem;">
+  <div style="background:#fff; border-radius:1rem; width:100%; max-width:360px; padding:1.5rem; box-shadow:0 25px 50px rgba(0,0,0,0.3);">
+    <p style="font-weight:600; color:#111; margin:0 0 0.5rem;">¿Eliminar este bloque?</p>
+    <p style="color:#9ca3af; font-size:0.875rem; margin:0 0 1.5rem;">Esta acción no se puede deshacer.</p>
+    <div style="display:flex; gap:0.75rem;">
+      <button onclick="closeDeleteModal()" style="flex:1; border:1px solid #e5e7eb; background:#fff; color:#374151; border-radius:0.75rem; padding:0.625rem; font-size:0.875rem; cursor:pointer;">Cancelar</button>
+      <button onclick="confirmDelete()" style="flex:1; background:#dc2626; color:#fff; border:none; border-radius:0.75rem; padding:0.625rem; font-size:0.875rem; font-weight:500; cursor:pointer;">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" style="display:none; position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%); background:#18181b; color:#fff; padding:0.75rem 1.25rem; border-radius:1rem; font-size:0.875rem; font-weight:500; z-index:200; white-space:nowrap; box-shadow:0 10px 30px rgba(0,0,0,0.4);"></div>
+
+<style>
+  .nav-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 0.75rem;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+    text-align: left;
+    background: none;
+    border: none;
+    color: #a1a1aa;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .nav-btn:hover { background: #27272a; color: #fff; }
+  .active-nav { background: rgba(180,83,9,0.15) !important; color: #f59e0b !important; }
+  .card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 1rem;
+    padding: 1.25rem;
+  }
+  .card-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #9ca3af;
+    margin: 0 0 1rem;
+  }
+  .field-label {
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #9ca3af;
+    margin-bottom: 0.375rem;
+  }
+  .field-input {
+    display: block;
+    width: 100%;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    padding: 0.625rem 0.75rem;
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color 0.15s;
+    font-family: inherit;
+  }
+  .field-input:focus { border-color: #d97706; }
+  .type-btn {
+    border: 2px solid #e5e7eb;
+    background: #fff;
+    border-radius: 0.75rem;
+    padding: 0.625rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    color: #6b7280;
+    transition: all 0.15s;
+  }
+  .type-btn:hover { border-color: #9ca3af; }
+  .active-type { border-color: #18181b !important; background: #18181b !important; color: #fff !important; }
+</style>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   LOGIN — vanilla JS, 100% sin dependencias externas
+═══════════════════════════════════════════════════ */
+var PASS = 'Zevor_2026';
+
+(function() {
+  // Si ya está logueado, mostrar panel directamente
+  if (localStorage.getItem('zv_auth') === 'true') {
+    showPanel();
+  }
+
+  document.getElementById('login-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var pw = document.getElementById('pw-input').value;
+    if (pw === PASS) {
+      localStorage.setItem('zv_auth', 'true');
+      document.getElementById('login-error').classList.add('hidden');
+      showPanel();
+    } else {
+      document.getElementById('login-error').classList.remove('hidden');
+      document.getElementById('pw-input').value = '';
+      document.getElementById('pw-input').focus();
+    }
+  });
+})();
+
+function showPanel() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('panel').style.display = 'block';
+  loadContent();
+}
+
+function doLogout() {
+  localStorage.removeItem('zv_auth');
+  location.reload();
+}
+
+/* ═══════════════════════════════════════════════════
+   DATOS
+═══════════════════════════════════════════════════ */
+var content = {
+  hero: { title: '', subtitle: '', ctaText: 'Ver colección', ctaLink: 'catalogo.html', image: '', backgroundColor: '#000000' },
+  sections: [],
+  footer: { brandLine: 'La diferencia no se explica.\nSe lleva puesta.', newsletterText: 'Sé el primero en enterarte de novedades y lanzamientos exclusivos.', copyright: '© 2026 ZEVOR. Todos los derechos reservados.', socialLinks: [], infoLinks: [{ label: 'Contáctanos', url: '#' }, { label: 'Envíos y Devoluciones', url: '#' }, { label: 'Autenticidad', url: '#' }, { label: 'Preguntas Frecuentes', url: '#' }] }
+};
+
+function loadContent() {
+  try {
+    var raw = localStorage.getItem('zv_page_content');
+    if (raw) {
+      var saved = JSON.parse(raw);
+      if (saved.hero) content.hero = Object.assign({}, content.hero, saved.hero);
+      if (saved.sections) content.sections = saved.sections;
+      if (saved.footer) {
+        content.footer = Object.assign({}, content.footer, saved.footer);
+        if (!Array.isArray(content.footer.socialLinks)) content.footer.socialLinks = [];
+        if (!Array.isArray(content.footer.infoLinks)) content.footer.infoLinks = [];
+      }
+    }
+  } catch(e) {}
+  renderHero();
+  renderSections();
+  renderFooter();
+}
+
+/* ═══════════════════════════════════════════════════
+   SAVE
+═══════════════════════════════════════════════════ */
+var saveTimer = null;
+
+function scheduleSave() {
+  setSaveIndicator(false);
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveNow, 800);
+}
+
+function saveNow() {
+  clearTimeout(saveTimer);
+  collectHero();
+  collectFooter();
+  try {
+    localStorage.setItem('zv_page_content', JSON.stringify(content));
+    setSaveIndicator(true);
+    showToast('✓ Contenido guardado');
+  } catch(e) {
+    showToast('⚠ Error: imágenes muy pesadas');
+  }
+}
+
+function setSaveIndicator(ok) {
+  document.getElementById('save-dot').style.background = ok ? '#22c55e' : '#f59e0b';
+  document.getElementById('save-text').textContent = ok ? 'Guardado' : 'Guardando...';
+}
+
+/* ═══════════════════════════════════════════════════
+   NAVEGACIÓN
+═══════════════════════════════════════════════════ */
+var pages = { hero: 'Hero Principal', sections: 'Secciones', footer: 'Footer' };
+
+function showPage(id, btn) {
+  document.querySelectorAll('.page-content').forEach(function(el) { el.style.display = 'none'; });
+  document.getElementById('page-' + id).style.display = '';
+  document.querySelectorAll('.nav-btn').forEach(function(b) { b.classList.remove('active-nav'); });
+  if (btn) btn.classList.add('active-nav');
+  document.getElementById('topbar-title').textContent = pages[id] || id;
+}
+
+/* ═══════════════════════════════════════════════════
+   HERO
+═══════════════════════════════════════════════════ */
+function renderHero() {
+  /* hero-title almacena el eslogan (subtitle en el objeto) */
+  document.getElementById('hero-title').value = content.hero.subtitle || '';
+  document.getElementById('hero-cta-text').value = content.hero.ctaText || '';
+  document.getElementById('hero-cta-link').value = content.hero.ctaLink || '';
+  document.getElementById('hero-bg-color').value = content.hero.backgroundColor || '#000000';
+  document.getElementById('hero-bg-text').value = content.hero.backgroundColor || '#000000';
+  if (content.hero.image) {
+    var preview = document.getElementById('hero-img-preview');
+    preview.innerHTML = '<img src="' + content.hero.image + '" style="width:100%;height:100%;object-fit:cover;" />';
+    document.getElementById('hero-img-remove').style.display = 'block';
+  }
+}
+
+function collectHero() {
+  content.hero.subtitle = document.getElementById('hero-title').value;
+  content.hero.ctaText = document.getElementById('hero-cta-text').value;
+  content.hero.ctaLink = document.getElementById('hero-cta-link').value;
+  content.hero.backgroundColor = document.getElementById('hero-bg-text').value;
+}
+
+function syncColorText() {
+  document.getElementById('hero-bg-text').value = document.getElementById('hero-bg-color').value;
+  scheduleSave();
+}
+function syncColorPicker() {
+  var val = document.getElementById('hero-bg-text').value;
+  if (/^#[0-9a-fA-F]{6}$/.test(val)) document.getElementById('hero-bg-color').value = val;
+  scheduleSave();
+}
+
+function uploadHeroImage(input) {
+  var file = input.files[0];
+  if (!file) return;
+  compressImage(file, 1200, 800, 0.78, function(dataUrl) {
+    content.hero.image = dataUrl;
+    var preview = document.getElementById('hero-img-preview');
+    preview.innerHTML = '<img src="' + dataUrl + '" style="width:100%;height:100%;object-fit:cover;" />';
+    document.getElementById('hero-img-remove').style.display = 'block';
+    input.value = '';
+    scheduleSave();
+  });
+}
+function clearHeroImage() {
+  content.hero.image = '';
+  document.getElementById('hero-img-preview').innerHTML = '<span style="color:#d1d5db;font-size:0.75rem;text-align:center;padding:0.5rem;">Sin imagen</span>';
+  document.getElementById('hero-img-remove').style.display = 'none';
+  scheduleSave();
+}
+
+/* ═══════════════════════════════════════════════════
+   SECCIONES
+═══════════════════════════════════════════════════ */
+var editingSectionId = null;
+var pendingDeleteId = null;
+var modalImage = '';
+
+function renderSections() {
+  var list = document.getElementById('sections-list');
+  var count = document.getElementById('sections-count');
+  count.textContent = content.sections.length + ' bloques configurados';
+  if (!content.sections.length) {
+    list.innerHTML = '<div style="border:2px dashed #e5e7eb; border-radius:1rem; padding:3rem; text-align:center; color:#9ca3af; font-size:0.875rem;">No hay bloques aún. Agrega el primero.</div>';
+    return;
+  }
+  var sorted = content.sections.slice().sort(function(a, b) { return a.order - b.order; });
+  list.innerHTML = sorted.map(function(sec, idx) {
+    return '<div style="background:#fff; border:1px solid #e5e7eb; border-radius:1rem; overflow:hidden;">' +
+      '<div style="display:flex; align-items:center; gap:0.75rem; padding:1rem 1.25rem; border-bottom:1px solid #f0f0f0;">' +
+        '<div style="flex:1; min-width:0;">' +
+          '<p style="font-size:0.875rem; font-weight:500; color:#111; margin:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + (sec.title || '(Sin título)') + '</p>' +
+          '<p style="font-size:0.75rem; color:#9ca3af; margin:0.25rem 0 0;">' + secTypeLabel(sec.type) + '</p>' +
+        '</div>' +
+        '<button onclick="moveSec(' + idx + ',-1)" ' + (idx===0?'disabled':'') + ' style="background:none;border:none;color:#9ca3af;cursor:pointer;padding:0.25rem 0.5rem;font-size:1rem;' + (idx===0?'opacity:0.3;':' ') + '">↑</button>' +
+        '<button onclick="moveSec(' + idx + ',1)" ' + (idx===sorted.length-1?'disabled':'') + ' style="background:none;border:none;color:#9ca3af;cursor:pointer;padding:0.25rem 0.5rem;font-size:1rem;' + (idx===sorted.length-1?'opacity:0.3;':' ') + '">↓</button>' +
+        '<button onclick="openEditSection(\'' + sec.id + '\')" style="background:none;border:none;color:#9ca3af;cursor:pointer;padding:0.25rem 0.5rem;font-size:0.8125rem;">Editar</button>' +
+        '<button onclick="openDeleteModal(\'' + sec.id + '\')" style="background:none;border:none;color:#f87171;cursor:pointer;padding:0.25rem 0.5rem;font-size:0.8125rem;">Eliminar</button>' +
+      '</div>' +
+      '<div style="padding:0.75rem 1.25rem;">' +
+        '<p style="font-size:0.75rem; color:#6b7280; margin:0;">' + (sec.description || '(Sin descripción)') + '</p>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function secTypeLabel(type) {
+  var map = { 'text-image': 'Texto + Imagen', 'text-only': 'Solo texto', 'video': 'Video', 'gallery': 'Galería' };
+  return map[type] || type;
+}
+
+function moveSec(idx, dir) {
+  var sorted = content.sections.slice().sort(function(a, b) { return a.order - b.order; });
+  var target = sorted[idx + dir];
+  var curr = sorted[idx];
+  if (!target) return;
+  var iC = content.sections.findIndex(function(s) { return s.id === curr.id; });
+  var iT = content.sections.findIndex(function(s) { return s.id === target.id; });
+  var tmp = content.sections[iC].order;
+  content.sections[iC].order = content.sections[iT].order;
+  content.sections[iT].order = tmp;
+  renderSections();
+  scheduleSave();
+}
+
+function openNewSection() {
+  editingSectionId = null;
+  modalImage = '';
+  document.getElementById('modal-title').textContent = 'Nuevo bloque';
+  document.getElementById('modal-save-btn').textContent = 'Agregar bloque';
+  document.getElementById('modal-sec-title').value = '';
+  document.getElementById('modal-sec-desc').value = '';
+  document.getElementById('modal-sec-video').value = '';
+  document.getElementById('modal-bg-text').value = '';
+  document.getElementById('modal-bg-color').value = '#ffffff';
+  document.getElementById('modal-img-size').value = 50;
+  document.getElementById('modal-size-val').textContent = '50%';
+  document.getElementById('modal-img-preview').innerHTML = '<span style="color:#d1d5db;font-size:0.65rem;text-align:center;">Sin imagen</span>';
+  document.getElementById('modal-img-remove').style.display = 'none';
+  document.getElementById('modal-img-size-wrap').style.display = 'none';
+  selectType('text-image');
+  document.getElementById('section-modal').style.display = 'flex';
+}
+
+function openEditSection(id) {
+  var sec = content.sections.find(function(s) { return String(s.id) === String(id); });
+  if (!sec) return;
+  editingSectionId = sec.id;
+  modalImage = sec.image || '';
+  document.getElementById('modal-title').textContent = 'Editar bloque';
+  document.getElementById('modal-save-btn').textContent = 'Guardar cambios';
+  document.getElementById('modal-sec-title').value = sec.title || '';
+  document.getElementById('modal-sec-desc').value = sec.description || '';
+  document.getElementById('modal-sec-video').value = sec.video || '';
+  document.getElementById('modal-bg-text').value = sec.backgroundColor || '';
+  document.getElementById('modal-bg-color').value = sec.backgroundColor || '#ffffff';
+  document.getElementById('modal-img-size').value = sec.imageSize || 50;
+  document.getElementById('modal-size-val').textContent = (sec.imageSize || 50) + '%';
+  if (sec.image) {
+    document.getElementById('modal-img-preview').innerHTML = '<img src="' + sec.image + '" style="width:100%;height:100%;object-fit:cover;" />';
+    document.getElementById('modal-img-remove').style.display = 'block';
+    document.getElementById('modal-img-size-wrap').style.display = 'block';
+  } else {
+    document.getElementById('modal-img-preview').innerHTML = '<span style="color:#d1d5db;font-size:0.65rem;text-align:center;">Sin imagen</span>';
+    document.getElementById('modal-img-remove').style.display = 'none';
+    document.getElementById('modal-img-size-wrap').style.display = 'none';
+  }
+  selectType(sec.type || 'text-image');
+  document.getElementById('section-modal').style.display = 'flex';
+}
+
+function selectType(type) {
+  document.querySelectorAll('.type-btn').forEach(function(b) {
+    if (b.dataset.type === type) { b.classList.add('active-type'); }
+    else { b.classList.remove('active-type'); }
+  });
+  document.getElementById('modal-desc-wrap').style.display = type === 'video' ? 'none' : '';
+  document.getElementById('modal-img-wrap').style.display = (type === 'text-image' || type === 'gallery') ? '' : 'none';
+  document.getElementById('modal-video-wrap').style.display = type === 'video' ? '' : 'none';
+}
+
+function saveSection() {
+  var type = (document.querySelector('.active-type') || {}).dataset || { type: 'text-image' };
+  var secType = type.type || 'text-image';
+  var sec = {
+    id: editingSectionId || Date.now(),
+    type: secType,
+    title: document.getElementById('modal-sec-title').value,
+    description: document.getElementById('modal-sec-desc').value,
+    image: modalImage,
+    imageSize: parseInt(document.getElementById('modal-img-size').value) || 50,
+    video: document.getElementById('modal-sec-video').value,
+    backgroundColor: document.getElementById('modal-bg-text').value,
+    order: 0
+  };
+  if (editingSectionId) {
+    var idx = content.sections.findIndex(function(s) { return String(s.id) === String(editingSectionId); });
+    if (idx >= 0) { sec.order = content.sections[idx].order; content.sections[idx] = sec; }
+  } else {
+    var maxOrder = 0;
+    content.sections.forEach(function(s) { if (s.order > maxOrder) maxOrder = s.order; });
+    sec.order = maxOrder + 1;
+    content.sections.push(sec);
+  }
+  closeModal();
+  renderSections();
+  scheduleSave();
+  showToast(editingSectionId ? '✓ Bloque actualizado' : '✓ Bloque agregado');
+}
+
+function openDeleteModal(id) {
+  pendingDeleteId = id;
+  document.getElementById('delete-modal').style.display = 'flex';
+}
+function closeDeleteModal() {
+  pendingDeleteId = null;
+  document.getElementById('delete-modal').style.display = 'none';
+}
+function confirmDelete() {
+  content.sections = content.sections.filter(function(s) { return String(s.id) !== String(pendingDeleteId); });
+  closeDeleteModal();
+  renderSections();
+  scheduleSave();
+  showToast('✓ Bloque eliminado');
+}
+function closeModal() {
+  document.getElementById('section-modal').style.display = 'none';
+}
+
+function uploadModalImage(input) {
+  var file = input.files[0];
+  if (!file) return;
+  compressImage(file, 650, 650, 0.72, function(dataUrl) {
+    modalImage = dataUrl;
+    document.getElementById('modal-img-preview').innerHTML = '<img src="' + dataUrl + '" style="width:100%;height:100%;object-fit:cover;" />';
+    document.getElementById('modal-img-remove').style.display = 'block';
+    document.getElementById('modal-img-size-wrap').style.display = 'block';
+    input.value = '';
+  });
+}
+function clearModalImage() {
+  modalImage = '';
+  document.getElementById('modal-img-preview').innerHTML = '<span style="color:#d1d5db;font-size:0.65rem;text-align:center;">Sin imagen</span>';
+  document.getElementById('modal-img-remove').style.display = 'none';
+  document.getElementById('modal-img-size-wrap').style.display = 'none';
+}
+function syncModalColorPicker() {
+  var val = document.getElementById('modal-bg-text').value;
+  if (/^#[0-9a-fA-F]{6}$/.test(val)) document.getElementById('modal-bg-color').value = val;
+}
+
+/* ═══════════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════════ */
+function renderFooter() {
+  document.getElementById('footer-brand').value = content.footer.brandLine || '';
+  document.getElementById('footer-newsletter').value = content.footer.newsletterText || '';
+  document.getElementById('footer-copyright').value = content.footer.copyright || '';
+  renderSocialList();
+  renderInfoList();
+}
+
+function collectFooter() {
+  content.footer.brandLine = document.getElementById('footer-brand').value;
+  content.footer.newsletterText = document.getElementById('footer-newsletter').value;
+  content.footer.copyright = document.getElementById('footer-copyright').value;
+  // socialLinks y infoLinks ya se actualizan en tiempo real desde los handlers
+}
+
+function renderSocialList() {
+  var list = document.getElementById('social-list');
+  list.innerHTML = '';
+  if (!content.footer.socialLinks || !content.footer.socialLinks.length) {
+    var empty = document.createElement('p');
+    empty.style.cssText = 'font-size:0.75rem;color:#d1d5db;font-style:italic;';
+    empty.textContent = 'Sin redes configuradas.';
+    list.appendChild(empty);
+    return;
+  }
+  content.footer.socialLinks.forEach(function(link, i) {
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;';
+
+    var sel = document.createElement('select');
+    sel.style.cssText = 'border:1px solid #e5e7eb;border-radius:0.75rem;padding:0.5rem;font-size:0.875rem;outline:none;flex-shrink:0;';
+    ['instagram','tiktok','whatsapp','facebook','youtube'].forEach(function(p) {
+      var opt = document.createElement('option');
+      opt.value = p;
+      opt.textContent = p.charAt(0).toUpperCase() + p.slice(1);
+      if (link.platform === p) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener('change', function() {
+      content.footer.socialLinks[i].platform = this.value;
+      scheduleSave();
+    });
+
+    var inp = document.createElement('input');
+    inp.type = 'text';
+    inp.className = 'field-input';
+    inp.value = link.url || '';
+    inp.placeholder = 'URL o número de teléfono';
+    inp.style.flex = '1';
+    inp.addEventListener('input', function() {
+      content.footer.socialLinks[i].url = this.value;
+      scheduleSave();
+    });
+
+    var btn = document.createElement('button');
+    btn.textContent = '✕';
+    btn.type = 'button';
+    btn.style.cssText = 'background:none;border:none;color:#f87171;cursor:pointer;padding:0.25rem 0.5rem;font-size:1rem;flex-shrink:0;';
+    btn.addEventListener('click', function() { removeSocial(i); });
+
+    row.appendChild(sel);
+    row.appendChild(inp);
+    row.appendChild(btn);
+    list.appendChild(row);
+  });
+}
+
+function addSocial() {
+  content.footer.socialLinks.push({ platform: 'instagram', url: '' });
+  renderSocialList();
+  scheduleSave();
+}
+function removeSocial(i) {
+  content.footer.socialLinks.splice(i, 1);
+  renderSocialList();
+  scheduleSave();
+}
+
+function renderInfoList() {
+  var list = document.getElementById('info-links-list');
+  list.innerHTML = '';
+  if (!content.footer.infoLinks || !content.footer.infoLinks.length) {
+    var empty = document.createElement('p');
+    empty.style.cssText = 'font-size:0.75rem;color:#d1d5db;font-style:italic;';
+    empty.textContent = 'Sin links configurados.';
+    list.appendChild(empty);
+    return;
+  }
+  content.footer.infoLinks.forEach(function(link, i) {
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:0.5rem;margin-bottom:0.75rem;';
+
+    var inpLabel = document.createElement('input');
+    inpLabel.type = 'text';
+    inpLabel.className = 'field-input';
+    inpLabel.value = link.label || '';
+    inpLabel.placeholder = 'Texto';
+    inpLabel.style.width = '130px';
+    inpLabel.addEventListener('input', function() {
+      content.footer.infoLinks[i].label = this.value;
+      scheduleSave();
+    });
+
+    var inpUrl = document.createElement('input');
+    inpUrl.type = 'text';
+    inpUrl.className = 'field-input';
+    inpUrl.value = link.url || '';
+    inpUrl.placeholder = 'URL';
+    inpUrl.style.flex = '1';
+    inpUrl.addEventListener('input', function() {
+      content.footer.infoLinks[i].url = this.value;
+      scheduleSave();
+    });
+
+    var btn = document.createElement('button');
+    btn.textContent = '✕';
+    btn.type = 'button';
+    btn.style.cssText = 'background:none;border:none;color:#f87171;cursor:pointer;padding:0.25rem 0.5rem;font-size:1rem;flex-shrink:0;';
+    btn.addEventListener('click', function() { removeInfoLink(i); });
+
+    row.appendChild(inpLabel);
+    row.appendChild(inpUrl);
+    row.appendChild(btn);
+    list.appendChild(row);
+  });
+}
+
+function addInfoLink() {
+  content.footer.infoLinks.push({ label: '', url: '' });
+  renderInfoList();
+  scheduleSave();
+}
+function removeInfoLink(i) {
+  content.footer.infoLinks.splice(i, 1);
+  renderInfoList();
+  scheduleSave();
+}
+
+/* ═══════════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════════ */
+var toastTimer = null;
+function showToast(msg) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.display = 'block';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { el.style.display = 'none'; }, 3000);
+}
+
+/* ═══════════════════════════════════════════════════
+   COMPRESIÓN DE IMÁGENES
+═══════════════════════════════════════════════════ */
+function compressImage(file, maxW, maxH, quality, callback) {
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      var w = img.width, h = img.height;
+      if (w > maxW || h > maxH) {
+        var ratio = Math.min(maxW / w, maxH / h);
+        w = Math.round(w * ratio);
+        h = Math.round(h * ratio);
+      }
+      var canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      callback(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+</script>
+</body>
+</html>

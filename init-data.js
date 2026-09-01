@@ -1,0 +1,94 @@
+/* ── ZEVOR: Datos iniciales y carga desde productos.json ──────────────
+   Flujo:
+   1. Siembra los 9 productos base en localStorage (sync, para primer render).
+   2. Fetches productos.json desde el servidor (async).
+      Si lo encuentra, actualiza localStorage con el catálogo completo y
+      dispara el evento 'zv-products-updated' para que las páginas re-rendericen.
+   Si productos.json no está disponible (desarrollo sin servidor), usa los
+   datos hardcodeados del paso 1 como fallback permanente.
+   ─────────────────────────────────────────────────────────────────── */
+(function() {
+
+  /* ── Datos de fallback (9 productos iniciales hardcodeados) ── */
+  var INIT = [
+    { id:1, name:'Wayfarer Clásico',  category:'Wayfarer',   parentId:null, price:45000, stock:12, frameColor:'Negro',               lensColor:'Cristal G-15',    images:['Wayfarer/wy (3).avif','Wayfarer/wy (4).avif','Wayfarer/wy (5).avif','Wayfarer/wy (6).avif'],                                                                                                                            image:'Wayfarer/wy (3).avif',                           link:'producto.html',   polarized:false, imagesPolarized:['','','',''], pricePolarized:null },
+    { id:8, name:'Aviator Classic',   category:'Aviator',    parentId:null, price:52000, stock:8,  frameColor:'Dorado',              lensColor:'Cristal Verde',   images:['Aviator/Aviador clasico Dorado, Verde 1.avif','Aviator/Aviador clasico Dorado, Verde 2.avif','Aviator/Aviador clasico Dorado, Verde 3.avif','Aviator/Aviador clasico Dorado, Verde 4.avif'],                    image:'Aviator/Aviador clasico Dorado, Verde 1.avif',   link:'aviator.html',    polarized:false, imagesPolarized:['','','',''], pricePolarized:null },
+    { id:9, name:'Clubmaster Classic',category:'Clubmaster', parentId:null, price:49000, stock:2,  frameColor:'Havana',              lensColor:'Cristal Verde',   images:['Clubmaster/clubmaster-seccion.jpg','','',''],                                                                                                                                                                               image:'Clubmaster/clubmaster-seccion.jpg',               link:'clubmaster.html', polarized:false, imagesPolarized:['','','',''], pricePolarized:null },
+    { id:2, name:'Wayfarer Clásico — Negro Mate',           category:'Wayfarer', parentId:1, price:45000, stock:3,  frameColor:'Negro Mate',          lensColor:'Cristal G-15',    images:['Wayfarer/wy mate 1.avif','Wayfarer/wy mate 2.avif','Wayfarer/wy mate 3.avif','Wayfarer/wy mate 4.avif'],                                                                                                 image:'Wayfarer/wy mate 1.avif',                        link:'producto.html',   polarized:false, imagesPolarized:['','','',''], pricePolarized:null },
+    { id:3, name:'Wayfarer Clásico — Carey',                category:'Wayfarer', parentId:1, price:48000, stock:0,  frameColor:'Carey',               lensColor:'Cristal Marrón',  images:['Wayfarer/carey 1.avif','Wayfarer/carey 2.avif','Wayfarer/carey 3.avif','Wayfarer/carey 4.avif'],                                                                                                         image:'Wayfarer/carey 1.avif',                          link:'producto.html',   polarized:false, imagesPolarized:['','','',''], pricePolarized:null },
+    { id:4, name:'Wayfarer Clásico — Lighting Carey',       category:'Wayfarer', parentId:1, price:48000, stock:7,  frameColor:'Lighting Carey',      lensColor:'Cristal Marrón',  images:['Wayfarer/Lighting Carey, marron 1.avif','Wayfarer/Lighting Carey, marron 2.avif','Wayfarer/Lighting Carey, marron  3.avif','Wayfarer/Lighting Carey, marron 4.avif'],                             image:'Wayfarer/Lighting Carey, marron 1.avif',         link:'producto.html',   polarized:false, imagesPolarized:['','','',''], pricePolarized:null },
+    { id:5, name:'Wayfarer Clásico — Azul Transparente',    category:'Wayfarer', parentId:1, price:46000, stock:4,  frameColor:'Azul Transparente',   lensColor:'Cristal Rojo',    images:['Wayfarer/Azul transparente, rojo oscuro 1.webp','Wayfarer/Azul transparente, rojo oscuro 2.webp','Wayfarer/Azul transparente, rojo oscuro 3.webp','Wayfarer/Azul transparente, rojo oscuro 4.webp'], image:'Wayfarer/Azul transparente, rojo oscuro 1.webp', link:'producto.html',   polarized:false, imagesPolarized:['','','',''], pricePolarized:null },
+    { id:6, name:'Wayfarer Clásico — Violeta Transparente', category:'Wayfarer', parentId:1, price:46000, stock:1,  frameColor:'Violeta Transparente',lensColor:'Cristal Naranja', images:['Wayfarer/Violeta transparente, naranja  1.avif','Wayfarer/Violeta transparente, naranja 2.avif','Wayfarer/Violeta transparente, naranja 3.avif','Wayfarer/Violeta transparente, naranja 4.avif'],    image:'Wayfarer/Violeta transparente, naranja  1.avif', link:'producto.html',   polarized:false, imagesPolarized:['','','',''], pricePolarized:null },
+    { id:7, name:'Wayfarer Clásico — Verde Translúcido',    category:'Wayfarer', parentId:1, price:46000, stock:0,  frameColor:'Verde Translúcido',   lensColor:'Cristal Verde',   images:['Wayfarer/tanslucido verde,verde 1.webp','Wayfarer/tanslucido verde,verde 2.webp','Wayfarer/tanslucido verde,verde 3.webp','Wayfarer/tanslucido verde,verde 4.webp'],                               image:'Wayfarer/tanslucido verde,verde 1.webp',         link:'producto.html',   polarized:false, imagesPolarized:['','','',''], pricePolarized:null },
+  ];
+
+  /* ── PASO 1: Siembra sincrónica de fallback ── */
+  try {
+    var raw  = localStorage.getItem('zv_products');
+    var saved;
+    if (!raw) {
+      localStorage.setItem('zv_products', JSON.stringify(INIT));
+      saved = INIT;
+    } else {
+      saved = JSON.parse(raw);
+    }
+    var changed = !raw;
+
+    /* Backfill campos que pueden faltar en datos guardados previamente */
+    if (raw) {
+      INIT.forEach(function(ref) {
+        var p = saved.find(function(x) { return x.id === ref.id; });
+        if (!p) { saved.push(ref); changed = true; return; }
+        if (!Array.isArray(p.images))                                  { p.images = [p.image||'','','','']; changed = true; }
+        if (p.images.filter(Boolean).length < 2 && ref.images.filter(Boolean).length > 1) { p.images = ref.images.slice(); p.image = ref.images[0]; changed = true; }
+        if (!p.frameColor && ref.frameColor)                            { p.frameColor = ref.frameColor; changed = true; }
+        if (!p.lensColor  && ref.lensColor)                             { p.lensColor  = ref.lensColor;  changed = true; }
+        if (p.parentId === undefined && ref.parentId !== undefined)     { p.parentId   = ref.parentId;   changed = true; }
+      });
+    }
+    if (changed) localStorage.setItem('zv_products', JSON.stringify(saved));
+
+    /* Sincronizar categorías */
+    try {
+      var cats = JSON.parse(localStorage.getItem('zv_categories') || '["Wayfarer","Wayfarer Reverse","Aviator","Clubmaster","Justin","Erika","Emy","Zuri","Lady Burbank","Bill","Corrigan","Hawkeye","Ferrari"]');
+      var catsChanged = false;
+      saved.forEach(function(p) { if (p.category && !cats.includes(p.category)) { cats.push(p.category); catsChanged = true; } });
+      if (catsChanged) localStorage.setItem('zv_categories', JSON.stringify(cats));
+    } catch(e) {}
+
+  } catch(e) {}
+
+  /* ── PASO 2: Carga asincrónica desde productos.json ──
+     Reemplaza localStorage con los datos del JSON publicado.
+     Esto garantiza que los productos agregados desde admin
+     (exportados como productos.json y subidos a GitHub) aparezcan
+     para todos los visitantes. */
+  if (typeof fetch === 'undefined') return;
+
+  fetch('productos.json?_=' + Math.floor(Date.now() / 60000))
+    .then(function(r) {
+      if (!r.ok) throw new Error('productos.json no disponible (status ' + r.status + ')');
+      return r.json();
+    })
+    .then(function(data) {
+      if (!data || !Array.isArray(data.products) || data.products.length === 0) return;
+
+      /* Actualizar productos en localStorage */
+      localStorage.setItem('zv_products', JSON.stringify(data.products));
+
+      /* Actualizar categorías en localStorage */
+      if (Array.isArray(data.categories) && data.categories.length > 0) {
+        localStorage.setItem('zv_categories', JSON.stringify(data.categories));
+      }
+
+      /* Avisar a la página para que re-renderice con los datos completos */
+      document.dispatchEvent(new CustomEvent('zv-products-updated', { detail: data }));
+    })
+    .catch(function(err) {
+      /* productos.json no existe o hay error de red — se usa el fallback de localStorage */
+      if (window.location.protocol !== 'file:') {
+        console.info('[ZEVOR] productos.json no encontrado, usando datos locales.');
+      }
+    });
+
+})();

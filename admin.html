@@ -1,0 +1,1223 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — ZEVOR</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <style>
+    [v-cloak] { display: none !important; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, -apple-system, sans-serif; background: #f8f8f8; }
+    input[type=number]::-webkit-inner-spin-button { opacity: 1; }
+    .toast-enter-active, .toast-leave-active { transition: all 0.3s ease; }
+    .toast-enter-from, .toast-leave-to { opacity: 0; transform: translateX(-50%) translateY(1rem); }
+  </style>
+</head>
+<body>
+
+<div id="app" v-cloak>
+
+  <!-- ══════════════════════════════════════════════
+       LOGIN
+  ══════════════════════════════════════════════ -->
+  <div v-if="!auth" class="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
+    <div class="w-full max-w-sm">
+
+      <!-- Logo -->
+      <div class="text-center mb-10">
+        <p class="text-white font-light tracking-[0.55em] text-3xl">ZEVOR</p>
+        <div class="w-8 h-px bg-yellow-700 mx-auto my-3"></div>
+        <p class="text-zinc-500 text-xs tracking-[0.25em] uppercase">Panel Administrativo</p>
+      </div>
+
+      <!-- Card -->
+      <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-8">
+        <p class="text-zinc-300 text-sm font-medium mb-6">Ingresá tu contraseña</p>
+        <form @submit.prevent="doLogin" class="space-y-4">
+          <div>
+            <label class="text-zinc-500 text-xs tracking-widest uppercase block mb-2">Contraseña</label>
+            <div class="relative">
+              <input
+                v-model="loginPw"
+                :type="showPw ? 'text' : 'password'"
+                class="w-full bg-zinc-800 border border-zinc-700 text-white rounded-xl px-4 py-3 pr-12 text-sm focus:outline-none focus:border-yellow-600 transition-colors"
+                placeholder="••••••••"
+                autofocus
+              >
+              <button type="button" @click="showPw=!showPw"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-200 text-lg leading-none select-none">
+                {{ showPw ? '🙈' : '👁' }}
+              </button>
+            </div>
+          </div>
+          <p v-if="loginError" class="text-red-400 text-xs">⚠ {{ loginError }}</p>
+          <button type="submit" :disabled="loginLoading || !loginPw"
+            class="w-full bg-yellow-700 hover:bg-yellow-600 disabled:opacity-40 disabled:cursor-not-allowed text-white py-3 rounded-xl text-xs tracking-widest uppercase font-semibold transition-colors">
+            {{ loginLoading ? 'Verificando...' : 'Ingresar al panel' }}
+          </button>
+        </form>
+      </div>
+
+      <p class="text-center text-zinc-700 text-xs mt-6">© 2026 ZEVOR — Solo administradores</p>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       ADMIN PANEL
+  ══════════════════════════════════════════════ -->
+  <div v-else class="min-h-screen bg-gray-50 flex">
+
+    <!-- Overlay móvil -->
+    <div v-if="sidebarOpen" @click="sidebarOpen=false"
+      class="fixed inset-0 bg-black/50 z-20 lg:hidden"></div>
+
+    <!-- ── SIDEBAR ── -->
+    <aside :class="['fixed inset-y-0 left-0 z-30 w-60 bg-zinc-950 flex flex-col transition-transform duration-300 lg:translate-x-0 lg:static lg:z-auto', sidebarOpen ? 'translate-x-0' : '-translate-x-full']">
+
+      <!-- Logo -->
+      <div class="px-6 py-6 border-b border-zinc-800 flex items-center justify-between">
+        <div>
+          <p class="text-white font-light tracking-[0.4em] text-xl">ZEVOR</p>
+          <p class="text-zinc-600 text-xs tracking-[0.25em] mt-0.5">ADMIN</p>
+        </div>
+        <button @click="sidebarOpen=false" class="text-zinc-600 hover:text-white lg:hidden text-xl leading-none">✕</button>
+      </div>
+
+      <!-- Nav -->
+      <nav class="flex-1 px-3 py-5">
+        <p class="text-zinc-600 text-xs tracking-widest uppercase px-3 mb-3">Menú</p>
+        <button v-for="item in navItems" :key="item.id"
+          @click="page=item.id; sidebarOpen=false"
+          :class="['w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm mb-1 text-left transition-all',
+            page===item.id ? 'bg-yellow-700/20 text-yellow-500' : 'text-zinc-400 hover:bg-zinc-800 hover:text-white']">
+          <span class="text-base leading-none">{{ item.emoji }}</span>
+          <span>{{ item.label }}</span>
+          <div v-if="page===item.id" class="ml-auto w-1 h-4 bg-yellow-600 rounded-full"></div>
+        </button>
+      </nav>
+
+      <!-- Exportar JSON -->
+      <div class="px-3 pb-2 border-t border-zinc-800 pt-3">
+        <button @click="exportarJSON"
+          class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm bg-yellow-700/20 text-yellow-400 hover:bg-yellow-700/40 transition-all font-medium">
+          <span class="text-base">⬇️</span> Exportar al sitio
+        </button>
+        <p class="text-zinc-600 text-xs px-3 mt-1.5 leading-tight">Descarga productos.json y súbela a GitHub para publicar cambios</p>
+      </div>
+
+      <!-- Logout -->
+      <div class="px-3 py-4 border-t border-zinc-800">
+        <button @click="doLogout"
+          class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-zinc-500 hover:bg-zinc-800 hover:text-white transition-all">
+          <span class="text-base">🚪</span> Cerrar sesión
+        </button>
+      </div>
+    </aside>
+
+    <!-- ── MAIN CONTENT ── -->
+    <div class="flex-1 flex flex-col min-w-0">
+
+      <!-- Topbar -->
+      <header class="bg-white border-b border-gray-100 px-5 py-4 flex items-center gap-4 sticky top-0 z-10">
+        <button @click="sidebarOpen=true" class="text-gray-500 hover:text-gray-900 lg:hidden text-xl">☰</button>
+        <p class="text-sm font-medium text-gray-700 tracking-wide">{{ navItems.find(n=>n.id===page)?.label }}</p>
+        <div class="ml-auto flex items-center gap-3">
+          <span class="text-xs text-gray-400 hidden sm:block">Administrador</span>
+          <div class="w-8 h-8 rounded-full bg-zinc-900 flex items-center justify-center">
+            <span class="text-white text-xs font-semibold tracking-widest">Z</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- ─── PAGE: DASHBOARD ─── -->
+      <main v-if="page==='dashboard'" class="flex-1 p-5 lg:p-8">
+        <div class="mb-8">
+          <h2 class="text-xl font-light text-gray-900 tracking-wide">Dashboard</h2>
+          <p class="text-gray-400 text-sm mt-1">Resumen general de ZEVOR</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+          <div v-for="s in stats" :key="s.title"
+            :class="['bg-white border rounded-2xl p-5', s.alert ? 'border-'+s.color+'-200' : 'border-gray-200']">
+            <p class="text-xs text-gray-400 uppercase tracking-widest mb-3">{{ s.title }}</p>
+            <p class="text-3xl font-light text-gray-900">{{ s.value }}</p>
+            <p class="text-xs text-gray-400 mt-1">{{ s.sub }}</p>
+          </div>
+        </div>
+
+        <!-- Alertas de stock -->
+        <div v-if="criticalStock.length" class="bg-red-50 border border-red-100 rounded-2xl p-5 mb-8">
+          <p class="text-sm font-semibold text-red-800 mb-3">⚠ Alertas de Stock</p>
+          <div class="space-y-2">
+            <div v-for="p in criticalStock" :key="p.id"
+              class="flex items-center justify-between bg-white rounded-xl px-4 py-2.5 border border-red-100">
+              <span class="text-sm font-medium text-gray-800">{{ p.name }}</span>
+              <span :class="['text-xs px-2.5 py-1 rounded-full font-medium', stockBadge(p.stock).cls]">
+                {{ p.stock === 0 ? 'Agotado' : p.stock + ' restantes' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pedidos recientes -->
+        <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+          <div class="px-5 py-4 border-b border-gray-100">
+            <p class="text-sm font-semibold text-gray-800">Pedidos Recientes</p>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="bg-gray-50 text-left">
+                  <th class="px-5 py-3 text-xs text-gray-400 font-medium uppercase tracking-wide">ID</th>
+                  <th class="px-5 py-3 text-xs text-gray-400 font-medium uppercase tracking-wide">Cliente</th>
+                  <th class="px-5 py-3 text-xs text-gray-400 font-medium uppercase tracking-wide hidden sm:table-cell">Producto</th>
+                  <th class="px-5 py-3 text-xs text-gray-400 font-medium uppercase tracking-wide">Total</th>
+                  <th class="px-5 py-3 text-xs text-gray-400 font-medium uppercase tracking-wide">Estado</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-50">
+                <tr v-for="o in recentOrders" :key="o.id" class="hover:bg-gray-50 transition-colors">
+                  <td class="px-5 py-3.5 font-mono text-xs text-gray-400">{{ o.id }}</td>
+                  <td class="px-5 py-3.5 font-medium text-gray-900">{{ o.customer }}</td>
+                  <td class="px-5 py-3.5 text-gray-500 hidden sm:table-cell">{{ o.product }}</td>
+                  <td class="px-5 py-3.5 font-medium text-gray-800">{{ fmt(o.total) }}</td>
+                  <td class="px-5 py-3.5">
+                    <span :class="['text-xs px-2.5 py-1 rounded-full font-medium', orderCls(o.status)]">{{ o.status }}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+
+      <!-- ─── PAGE: PRODUCTS ─── -->
+      <main v-else-if="page==='products'" class="flex-1 p-5 lg:p-8">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div>
+            <h2 class="text-xl font-light text-gray-900 tracking-wide">Productos</h2>
+            <p class="text-gray-400 text-sm mt-1">{{ products.length }} productos en catálogo</p>
+          </div>
+          <button @click="openNewProduct"
+            class="flex items-center gap-2 bg-zinc-900 hover:bg-zinc-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-colors">
+            + Agregar producto
+          </button>
+        </div>
+
+        <!-- Buscador -->
+        <input v-model="productSearch" placeholder="Buscar por nombre o categoría..."
+          class="w-full sm:w-80 border border-gray-200 rounded-xl px-4 py-2.5 text-sm mb-5 focus:outline-none focus:border-yellow-600 transition-colors" />
+
+        <!-- Tabla -->
+        <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="bg-gray-50 text-left border-b border-gray-100">
+                  <th class="px-5 py-3.5 text-xs text-gray-400 font-medium uppercase tracking-wide">Producto</th>
+                  <th class="px-5 py-3.5 text-xs text-gray-400 font-medium uppercase tracking-wide hidden md:table-cell">Categoría</th>
+                  <th class="px-5 py-3.5 text-xs text-gray-400 font-medium uppercase tracking-wide hidden sm:table-cell">Precio</th>
+                  <th class="px-5 py-3.5 text-xs text-gray-400 font-medium uppercase tracking-wide">Stock</th>
+                  <th class="px-5 py-3.5 text-xs text-gray-400 font-medium uppercase tracking-wide">Estado</th>
+                  <th class="px-5 py-3.5 text-xs text-gray-400 font-medium uppercase tracking-wide text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-50">
+                <tr v-for="p in filteredProducts" :key="p.id"
+                  :class="['hover:bg-gray-50 transition-colors', p.stock===0 ? 'opacity-50' : '']">
+                  <td class="px-5 py-4">
+                    <div class="flex items-center gap-3">
+                      <div class="w-10 h-10 rounded-xl bg-gray-100 flex-shrink-0 overflow-hidden flex items-center justify-center">
+                        <img v-if="p.image" :src="p.image" :alt="p.name"
+                          class="w-full h-full object-contain p-1"
+                          @error="e => e.target.style.display='none'" />
+                        <span v-else class="text-xl">🕶️</span>
+                      </div>
+                      <div>
+                        <span class="font-medium text-gray-900 text-xs sm:text-sm">{{ p.name }}</span>
+                        <span v-if="p.parentId" class="ml-1.5 text-xs bg-purple-100 text-purple-600 px-1.5 py-0.5 rounded-full font-medium">Variante</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-5 py-4 hidden md:table-cell">
+                    <span class="text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full">{{ p.category }}</span>
+                  </td>
+                  <td class="px-5 py-4 font-medium text-gray-800 hidden sm:table-cell">{{ fmt(p.price) }}</td>
+                  <td class="px-5 py-4">
+                    <input type="number" min="0"
+                      :value="p.stock"
+                      @change="updateStock(p.id, $event.target.value)"
+                      class="w-16 border border-gray-200 rounded-lg px-2 py-1 text-sm text-center focus:outline-none focus:border-yellow-600 transition-colors" />
+                  </td>
+                  <td class="px-5 py-4">
+                    <span :class="['text-xs px-2.5 py-1 rounded-full font-medium', stockBadge(p.stock).cls]">
+                      {{ stockBadge(p.stock).label }}
+                    </span>
+                  </td>
+                  <td class="px-5 py-4">
+                    <div class="flex items-center justify-end gap-1">
+                      <button @click="openEditProduct(p)"
+                        class="p-1.5 text-gray-400 hover:text-yellow-600 hover:bg-yellow-50 rounded-lg transition-colors"
+                        title="Editar">✏️</button>
+                      <button @click="confirmDelete=p.id"
+                        class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Eliminar">🗑</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr v-if="!filteredProducts.length">
+                  <td colspan="6" class="px-5 py-10 text-center text-gray-400 text-sm">Sin resultados</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+
+      <!-- ─── PAGE: ORDERS ─── -->
+      <main v-else-if="page==='orders'" class="flex-1 p-5 lg:p-8">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div>
+            <h2 class="text-xl font-light text-gray-900 tracking-wide">Pedidos</h2>
+            <p class="text-gray-400 text-sm mt-1">{{ orders.length }} pedidos en total</p>
+          </div>
+          <button @click="openOrderModal"
+            class="flex items-center gap-2 bg-zinc-900 hover:bg-zinc-700 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-colors">
+            + Agregar pedido
+          </button>
+        </div>
+
+        <!-- Filtros -->
+        <div class="flex gap-2 mb-5 flex-wrap">
+          <button v-for="s in ['Todos','Pendiente','Pagado','Enviado','Entregado']" :key="s"
+            @click="orderFilter=s"
+            :class="['px-3.5 py-1.5 rounded-full text-xs font-medium transition-colors',
+              orderFilter===s ? 'bg-zinc-900 text-white' : 'bg-white border border-gray-200 text-gray-500 hover:border-gray-400']">
+            {{ s }}
+            <span v-if="s!=='Todos'" class="ml-1 opacity-50">({{ orderCounts[s] || 0 }})</span>
+          </button>
+        </div>
+
+        <!-- Tabla -->
+        <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="bg-gray-50 text-left border-b border-gray-100">
+                  <th class="px-5 py-3.5 text-xs text-gray-400 font-medium uppercase tracking-wide">ID</th>
+                  <th class="px-5 py-3.5 text-xs text-gray-400 font-medium uppercase tracking-wide">Cliente</th>
+                  <th class="px-5 py-3.5 text-xs text-gray-400 font-medium uppercase tracking-wide hidden sm:table-cell">Producto</th>
+                  <th class="px-5 py-3.5 text-xs text-gray-400 font-medium uppercase tracking-wide hidden md:table-cell">Fecha</th>
+                  <th class="px-5 py-3.5 text-xs text-gray-400 font-medium uppercase tracking-wide">Total</th>
+                  <th class="px-5 py-3.5 text-xs text-gray-400 font-medium uppercase tracking-wide">Estado</th>
+                  <th class="px-5 py-3.5"></th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-50">
+                <tr v-for="o in filteredOrders" :key="o.id" class="hover:bg-gray-50 transition-colors">
+                  <td class="px-5 py-4 font-mono text-xs text-gray-400">{{ o.id }}</td>
+                  <td class="px-5 py-4 font-medium text-gray-900">{{ o.customer }}</td>
+                  <td class="px-5 py-4 text-gray-500 hidden sm:table-cell">{{ o.product }}</td>
+                  <td class="px-5 py-4 text-gray-400 text-xs hidden md:table-cell">{{ o.date }}</td>
+                  <td class="px-5 py-4 font-medium text-gray-800">{{ fmt(o.total) }}</td>
+                  <td class="px-5 py-4">
+                    <select :value="o.status" @change="updateOrderStatus(o.id, $event.target.value)"
+                      :class="['text-xs px-2.5 py-1.5 rounded-full font-medium cursor-pointer focus:outline-none border-0', orderCls(o.status)]">
+                      <option v-for="s in ['Pendiente','Pagado','Enviado','Entregado']" :key="s" :value="s">{{ s }}</option>
+                    </select>
+                  </td>
+                  <td class="px-5 py-4">
+                    <button @click="deleteOrder(o.id)" class="text-gray-300 hover:text-red-500 transition-colors text-base leading-none" title="Eliminar pedido">✕</button>
+                  </td>
+                </tr>
+                <tr v-if="!filteredOrders.length">
+                  <td colspan="7" class="px-5 py-10 text-center text-gray-400 text-sm">Sin pedidos registrados. Usá "Agregar pedido" para cargar uno.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+
+    </div><!-- /main content -->
+  </div><!-- /admin panel -->
+
+  <!-- ══════════════════════════════════════════════
+       MODAL: AGREGAR PEDIDO MANUAL
+  ══════════════════════════════════════════════ -->
+  <div v-if="showOrderModal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        <p class="font-semibold text-gray-900">Agregar pedido</p>
+        <button @click="showOrderModal=false" class="text-gray-400 hover:text-gray-700 text-xl leading-none">✕</button>
+      </div>
+      <div class="p-6 space-y-4">
+        <div>
+          <label class="text-xs text-gray-400 uppercase tracking-widest block mb-1.5">Cliente *</label>
+          <input v-model="orderForm.customer" placeholder="Nombre del cliente"
+            class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-yellow-600 transition-colors">
+        </div>
+        <div>
+          <label class="text-xs text-gray-400 uppercase tracking-widest block mb-1.5">Producto *</label>
+          <input v-model="orderForm.product" placeholder="Ej: Wayfarer Negro Clásico"
+            class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-yellow-600 transition-colors">
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="text-xs text-gray-400 uppercase tracking-widest block mb-1.5">Total ($)</label>
+            <input v-model.number="orderForm.total" type="number" min="0" placeholder="45000"
+              class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-yellow-600 transition-colors">
+          </div>
+          <div>
+            <label class="text-xs text-gray-400 uppercase tracking-widest block mb-1.5">Estado</label>
+            <select v-model="orderForm.status"
+              class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-yellow-600 transition-colors">
+              <option>Pendiente</option>
+              <option>Pagado</option>
+              <option>Enviado</option>
+              <option>Entregado</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="text-xs text-gray-400 uppercase tracking-widest block mb-1.5">Fecha</label>
+          <input v-model="orderForm.date" type="date"
+            class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-yellow-600 transition-colors">
+        </div>
+        <div>
+          <label class="text-xs text-gray-400 uppercase tracking-widest block mb-1.5">Notas (opcional)</label>
+          <input v-model="orderForm.notes" placeholder="Canal de venta, observaciones, etc."
+            class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-yellow-600 transition-colors">
+        </div>
+        <p v-if="orderFormError" class="text-red-500 text-xs">{{ orderFormError }}</p>
+      </div>
+      <div class="px-6 pb-6 flex gap-3">
+        <button @click="showOrderModal=false"
+          class="flex-1 border border-gray-200 text-gray-600 hover:border-gray-400 py-2.5 rounded-xl text-sm font-medium transition-colors">
+          Cancelar
+        </button>
+        <button @click="saveOrder"
+          class="flex-1 bg-zinc-900 hover:bg-zinc-700 text-white py-2.5 rounded-xl text-sm font-medium transition-colors">
+          Guardar pedido
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       MODAL: AGREGAR / EDITAR PRODUCTO
+  ══════════════════════════════════════════════ -->
+  <div v-if="showProductModal" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl max-h-[92vh] flex flex-col">
+
+      <!-- Header -->
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
+        <div class="flex items-center gap-2">
+          <button v-if="modalStep !== 'type' && !editingProductId" @click="goBackModal"
+            class="text-gray-400 hover:text-gray-800 font-medium text-lg leading-none pr-1">←</button>
+          <p class="font-semibold text-gray-900">{{ modalTitle }}</p>
+        </div>
+        <button @click="showProductModal=false" class="text-gray-400 hover:text-gray-700 text-xl leading-none">✕</button>
+      </div>
+
+      <!-- ── PASO 1: Categoría + Tipo ── -->
+      <div v-if="modalStep === 'type'" class="p-6 space-y-6 overflow-y-auto">
+
+        <!-- Categoría -->
+        <div>
+          <p class="text-xs text-gray-400 uppercase tracking-widest mb-3">Categoría</p>
+          <div class="grid grid-cols-3 gap-2">
+            <div v-for="cat in categories" :key="cat" class="relative group">
+              <!-- Modo edición -->
+              <div v-if="editingCat === cat" class="flex gap-1 col-span-1">
+                <input v-model="editingCatName"
+                  @keyup.enter="renameCategory"
+                  @keyup.escape="editingCat = null"
+                  class="flex-1 min-w-0 border border-yellow-500 rounded-xl px-2 py-2 text-sm focus:outline-none"
+                  style="max-width:100%" />
+                <button type="button" @click="renameCategory"
+                  class="px-2 py-2 bg-zinc-900 text-white rounded-xl text-xs font-bold">✓</button>
+                <button type="button" @click="editingCat = null"
+                  class="px-2 py-2 border border-gray-200 text-gray-500 rounded-xl text-xs">✕</button>
+              </div>
+              <!-- Modo normal -->
+              <template v-else>
+                <button type="button" @click="productForm.category = cat"
+                  :class="['w-full py-3 rounded-xl border-2 text-sm font-medium transition-all',
+                    productForm.category === cat
+                      ? 'border-zinc-900 bg-zinc-900 text-white'
+                      : 'border-gray-200 text-gray-600 hover:border-gray-400']">
+                  {{ cat }}
+                </button>
+                <button type="button"
+                  @click.stop="editingCat = cat; editingCatName = cat"
+                  class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded text-gray-400 hover:text-yellow-600 text-xs leading-none"
+                  title="Renombrar categoría">✏</button>
+              </template>
+            </div>
+            <button v-if="!showNewCat" type="button" @click="showNewCat=true; newCatName=''"
+              class="py-3 rounded-xl border-2 border-dashed border-gray-200 text-sm text-gray-400 hover:border-yellow-500 hover:text-yellow-600 transition-all">
+              + Nueva
+            </button>
+          </div>
+          <div v-if="showNewCat" class="flex gap-2 mt-2">
+            <input v-model="newCatName" @keyup.enter="addCategory"
+              class="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-yellow-600"
+              placeholder="Nombre de la categoría" ref="newCatInput" />
+            <button type="button" @click="addCategory"
+              class="px-3 py-2 bg-zinc-900 text-white rounded-xl text-sm font-medium hover:bg-zinc-700 transition-colors">
+              Agregar
+            </button>
+            <button type="button" @click="showNewCat=false"
+              class="px-3 py-2 border border-gray-200 text-gray-500 rounded-xl text-sm hover:bg-gray-50 transition-colors">
+              ✕
+            </button>
+          </div>
+        </div>
+
+        <!-- Tipo de producto -->
+        <div>
+          <p class="text-xs text-gray-400 uppercase tracking-widest mb-3">¿Qué tipo de producto es?</p>
+          <div class="space-y-3">
+
+            <button type="button" @click="selectAddMode('new')"
+              class="w-full flex items-center gap-4 p-4 border-2 border-gray-200 rounded-xl hover:border-zinc-900 hover:bg-gray-50 text-left transition-all group">
+              <span class="text-2xl flex-shrink-0">✨</span>
+              <div>
+                <p class="font-semibold text-gray-900 text-sm">Nuevo lente</p>
+                <p class="text-xs text-gray-400 mt-0.5">Modelo completamente nuevo en el catálogo</p>
+              </div>
+              <span class="ml-auto text-gray-300 group-hover:text-gray-600 text-lg">›</span>
+            </button>
+
+            <button type="button" @click="selectAddMode('variant')"
+              :disabled="!parentModelsInCategory.length"
+              :title="!parentModelsInCategory.length ? 'No hay modelos base en esta categoría aún' : ''"
+              class="w-full flex items-center gap-4 p-4 border-2 border-gray-200 rounded-xl hover:border-zinc-900 hover:bg-gray-50 text-left transition-all group disabled:opacity-40 disabled:cursor-not-allowed">
+              <span class="text-2xl flex-shrink-0">🎨</span>
+              <div>
+                <p class="font-semibold text-gray-900 text-sm">Variante de uno existente</p>
+                <p class="text-xs text-gray-400 mt-0.5">Mismo modelo en diferente color o marco</p>
+              </div>
+              <span class="ml-auto text-gray-300 group-hover:text-gray-600 text-lg">›</span>
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PASO 2: Elegir modelo base ── -->
+      <div v-else-if="modalStep === 'pick-base'" class="p-6 overflow-y-auto">
+        <p class="text-xs text-gray-400 mb-4">Elegí el modelo base de <strong class="text-gray-700">{{ productForm.category }}</strong> del que va a ser variante:</p>
+        <div class="space-y-2">
+          <button v-for="p in parentModelsInCategory" :key="p.id"
+            type="button"
+            @click="selectBaseProduct(p)"
+            class="w-full flex items-center gap-3 p-3 border border-gray-200 rounded-xl hover:border-zinc-900 hover:bg-gray-50 text-left transition-all group">
+            <div class="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center">
+              <img v-if="p.image" :src="p.image" class="w-full h-full object-contain p-1"
+                @error="e => e.target.style.display='none'" />
+              <span v-else class="text-xl">🕶️</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="font-medium text-gray-900 text-sm truncate">{{ p.name }}</p>
+              <p class="text-xs text-gray-400 mt-0.5">{{ fmt(p.price) }}</p>
+            </div>
+            <span class="text-gray-300 group-hover:text-gray-600 text-lg flex-shrink-0">›</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── PASO 3: Formulario ── -->
+      <form v-else-if="modalStep === 'form'" @submit.prevent="saveProduct" class="p-6 space-y-4 overflow-y-auto">
+
+        <!-- Aviso variante -->
+        <div v-if="addMode === 'variant'" class="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5">
+          <span class="text-sm">🎨</span>
+          <p class="text-xs text-amber-700">Variante de <strong>{{ variantBaseName }}</strong> — editá el nombre, subí la nueva imagen y ajustá el stock.</p>
+        </div>
+
+        <div>
+          <label class="text-xs text-gray-400 uppercase tracking-widest block mb-1.5">Nombre *</label>
+          <input required v-model="productForm.name"
+            class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-yellow-600"
+            placeholder="Ej: Wayfarer Clásico — Azul" />
+        </div>
+
+        <!-- Colores -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs text-gray-400 uppercase tracking-widest block mb-1.5">Color del Marco</label>
+            <input v-model="productForm.frameColor"
+              class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-yellow-600"
+              placeholder="Ej: Negro, Havana, Dorado" />
+          </div>
+          <div>
+            <label class="text-xs text-gray-400 uppercase tracking-widest block mb-1.5">Color del Lente</label>
+            <input v-model="productForm.lensColor"
+              class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-yellow-600"
+              placeholder="Ej: Cristal Verde, G-15" />
+          </div>
+        </div>
+
+        <!-- Polarizados toggle -->
+        <div>
+          <label class="text-xs text-gray-400 uppercase tracking-widest block mb-1.5">Versión Polarizada</label>
+          <button type="button" @click="productForm.polarized = !productForm.polarized"
+            :class="['w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border-2 text-sm font-medium transition-all',
+              productForm.polarized
+                ? 'border-blue-500 bg-blue-50 text-blue-700'
+                : 'border-gray-200 text-gray-500 hover:border-gray-400']">
+            <span :class="['w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-colors text-xs',
+              productForm.polarized ? 'bg-blue-500 text-white' : 'bg-gray-200 text-transparent']">✓</span>
+            <span>{{ productForm.polarized ? 'Tiene versión polarizada' : 'Activar versión polarizada' }}</span>
+            <span v-if="productForm.polarized" class="ml-auto text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full font-semibold">Activo</span>
+          </button>
+        </div>
+
+        <!-- Categoría (solo lectura en el form, ya elegida) -->
+        <div>
+          <label class="text-xs text-gray-400 uppercase tracking-widest block mb-1.5">Categoría</label>
+          <div class="flex items-center gap-2 border border-gray-100 bg-gray-50 rounded-xl px-3 py-2.5">
+            <span class="text-sm text-gray-700 font-medium">{{ productForm.category }}</span>
+            <button v-if="!editingProductId" type="button" @click="goBackModal"
+              class="ml-auto text-xs text-gray-400 hover:text-gray-700 underline">Cambiar</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs text-gray-400 uppercase tracking-widest block mb-1.5">Precio ($) *</label>
+            <input required type="number" min="0" v-model="productForm.price"
+              class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-yellow-600"
+              placeholder="45000" />
+          </div>
+          <div>
+            <label class="text-xs text-gray-400 uppercase tracking-widest block mb-1.5">Stock *</label>
+            <input required type="number" min="0" v-model="productForm.stock"
+              class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-yellow-600"
+              placeholder="0" />
+          </div>
+        </div>
+
+        <!-- Imágenes (hasta 4) -->
+        <div>
+          <label class="text-xs text-gray-400 uppercase tracking-widest block mb-2">
+            Imágenes del producto
+            <span class="text-gray-300 normal-case font-normal tracking-normal"> · hasta 4 · la 1ª es la principal</span>
+          </label>
+          <div class="grid grid-cols-4 gap-2">
+            <div v-for="idx in [0,1,2,3]" :key="idx">
+              <!-- Preview -->
+              <div class="aspect-square bg-gray-100 rounded-xl overflow-hidden relative flex items-center justify-center mb-1.5">
+                <img v-if="productForm.images[idx]" :src="productForm.images[idx]"
+                  class="w-full h-full object-contain p-1" />
+                <p v-else class="text-gray-300 text-xs text-center px-1 leading-tight select-none">
+                  {{ idx === 0 ? 'Principal' : 'Foto ' + (idx + 1) }}
+                </p>
+                <button v-if="productForm.images[idx]" type="button" @click="removeImage(idx)"
+                  class="absolute top-0.5 right-0.5 bg-black/60 hover:bg-red-600 text-white rounded-full w-4 h-4 text-xs leading-none flex items-center justify-center transition-colors">✕</button>
+              </div>
+              <!-- Upload -->
+              <label :class="['flex items-center justify-center border rounded-lg py-1.5 text-xs cursor-pointer transition-colors',
+                uploadingImage ? 'border-gray-100 text-gray-300 cursor-not-allowed' : 'border-gray-200 text-gray-500 hover:border-yellow-600 hover:text-yellow-700']">
+                + Subir
+                <input type="file" accept="image/*" class="hidden" :disabled="uploadingImage"
+                  @change="e => handleImageUpload(e, idx)" />
+              </label>
+            </div>
+          </div>
+          <p v-if="uploadingImage" class="text-xs text-gray-400 text-center mt-2">Procesando imagen...</p>
+        </div>
+
+        <!-- Imágenes versión polarizada -->
+        <div v-if="productForm.polarized" class="bg-blue-50 border border-blue-100 rounded-xl p-3 space-y-3">
+          <!-- Precio Polarizado -->
+          <div>
+            <label class="text-xs text-blue-500 uppercase tracking-widest block mb-1.5 font-semibold">Precio versión polarizada ($)</label>
+            <input type="number" min="0" v-model="productForm.pricePolarized"
+              class="w-full border border-blue-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500 bg-white"
+              placeholder="Ej: 75000" />
+          </div>
+          <label class="text-xs text-blue-500 uppercase tracking-widest block mb-2 font-semibold">
+            Fotos versión polarizada
+            <span class="text-blue-300 normal-case font-normal tracking-normal"> · hasta 4 · la 1ª es la principal</span>
+          </label>
+          <div class="grid grid-cols-4 gap-2">
+            <div v-for="idx in [0,1,2,3]" :key="'pol-'+idx">
+              <div class="aspect-square bg-white rounded-xl overflow-hidden relative flex items-center justify-center mb-1.5 border border-blue-100">
+                <img v-if="productForm.imagesPolarized[idx]" :src="productForm.imagesPolarized[idx]"
+                  class="w-full h-full object-contain p-1" />
+                <p v-else class="text-blue-200 text-xs text-center px-1 leading-tight select-none">
+                  {{ idx === 0 ? 'Principal' : 'Foto ' + (idx + 1) }}
+                </p>
+                <button v-if="productForm.imagesPolarized[idx]" type="button" @click="removePolarizedImage(idx)"
+                  class="absolute top-0.5 right-0.5 bg-black/60 hover:bg-red-600 text-white rounded-full w-4 h-4 text-xs leading-none flex items-center justify-center transition-colors">✕</button>
+              </div>
+              <label :class="['flex items-center justify-center border rounded-lg py-1.5 text-xs cursor-pointer transition-colors',
+                uploadingImage ? 'border-gray-100 text-gray-300 cursor-not-allowed' : 'border-blue-200 text-blue-500 hover:border-blue-500 hover:text-blue-700']">
+                + Subir
+                <input type="file" accept="image/*" class="hidden" :disabled="uploadingImage"
+                  @change="e => handlePolarizedImageUpload(e, idx)" />
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-xs text-gray-400 uppercase tracking-widest block mb-1.5">Enlace en la tienda</label>
+          <input v-model="productForm.link"
+            class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-yellow-600"
+            placeholder="wayfarer.html" />
+          <p class="text-xs text-gray-300 mt-1">Página a la que lleva el producto (ej: producto.html, wayfarer.html)</p>
+        </div>
+
+        <div class="flex gap-3 pt-2">
+          <button type="button" @click="showProductModal=false"
+            class="flex-1 border border-gray-200 text-gray-600 rounded-xl py-2.5 text-sm hover:bg-gray-50">
+            Cancelar
+          </button>
+          <button type="submit"
+            class="flex-1 bg-zinc-900 hover:bg-zinc-700 text-white rounded-xl py-2.5 text-sm font-medium transition-colors">
+            {{ editingProductId ? 'Guardar cambios' : (addMode === 'variant' ? 'Agregar variante' : 'Agregar lente') }}
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       MODAL: CONFIRMAR ELIMINAR
+  ══════════════════════════════════════════════ -->
+  <div v-if="confirmDelete" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl">
+      <p class="font-semibold text-gray-900 mb-2">¿Eliminar producto?</p>
+      <p class="text-gray-400 text-sm mb-6">Esta acción no se puede deshacer.</p>
+      <div class="flex gap-3">
+        <button @click="confirmDelete=null"
+          class="flex-1 border border-gray-200 text-gray-600 rounded-xl py-2.5 text-sm hover:bg-gray-50">
+          Cancelar
+        </button>
+        <button @click="deleteProduct"
+          class="flex-1 bg-red-600 hover:bg-red-700 text-white rounded-xl py-2.5 text-sm font-medium transition-colors">
+          Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       TOAST DE NOTIFICACIÓN
+  ══════════════════════════════════════════════ -->
+  <transition name="toast">
+    <div v-if="toast" :class="['fixed bottom-6 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl text-sm font-medium transition-all',
+      toast.type === 'ok'    ? 'bg-zinc-900 text-white' :
+      toast.type === 'error' ? 'bg-red-600 text-white'  : 'bg-amber-500 text-white']">
+      <span class="text-base leading-none">{{ toast.type === 'ok' ? '✓' : '⚠' }}</span>
+      {{ toast.msg }}
+    </div>
+  </transition>
+
+</div><!-- /#app -->
+
+<script>
+/* ── COMPRESIÓN DE IMÁGENES ──────────────────────── */
+function compressImage(file, maxW, maxH, quality) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > maxW || h > maxH) {
+          const ratio = Math.min(maxW / w, maxH / h);
+          w = Math.round(w * ratio);
+          h = Math.round(h * ratio);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+const { createApp } = Vue;
+
+/* ── DATOS INICIALES ─────────────────────────────── */
+const INIT_PRODUCTS = [
+  /* ── MODELOS BASE (aparecen en catálogo) ── */
+  { id:1, name:'Wayfarer Clásico',  category:'Wayfarer',   parentId:null, price:45000, stock:12, frameColor:'Negro',               lensColor:'Cristal G-15',    images:['Wayfarer/wy (3).avif','Wayfarer/wy (4).avif','Wayfarer/wy (5).avif','Wayfarer/wy (6).avif'],                                                                                                                           image:'Wayfarer/wy (3).avif',                           link:'producto.html'   },
+  { id:8, name:'Aviator Classic',   category:'Aviator',    parentId:null, price:52000, stock:8,  frameColor:'Dorado',              lensColor:'Cristal Verde',   images:['Aviator/Aviador clasico Dorado, Verde 1.avif','Aviator/Aviador clasico Dorado, Verde 2.avif','Aviator/Aviador clasico Dorado, Verde 3.avif','Aviator/Aviador clasico Dorado, Verde 4.avif'],                   image:'Aviator/Aviador clasico Dorado, Verde 1.avif',   link:'aviator.html'    },
+  { id:9, name:'Clubmaster Classic',category:'Clubmaster', parentId:null, price:49000, stock:2,  frameColor:'Havana',              lensColor:'Cristal Verde',   images:['Clubmaster/clubmaster-seccion.jpg','','',''],                                                                                                                                                                              image:'Clubmaster/clubmaster-seccion.jpg',               link:'clubmaster.html' },
+
+  /* ── VARIANTES DE WAYFARER CLÁSICO (id 1) ── */
+  { id:2, name:'Wayfarer Clásico — Negro Mate',          category:'Wayfarer', parentId:1, price:45000, stock:3,  frameColor:'Negro Mate',          lensColor:'Cristal G-15',    images:['Wayfarer/wy mate 1.avif','Wayfarer/wy mate 2.avif','Wayfarer/wy mate 3.avif','Wayfarer/wy mate 4.avif'],                                                                                                image:'Wayfarer/wy mate 1.avif',                        link:'producto.html' },
+  { id:3, name:'Wayfarer Clásico — Carey',               category:'Wayfarer', parentId:1, price:48000, stock:0,  frameColor:'Carey',               lensColor:'Cristal Marrón',  images:['Wayfarer/carey 1.avif','Wayfarer/carey 2.avif','Wayfarer/carey 3.avif','Wayfarer/carey 4.avif'],                                                                                                        image:'Wayfarer/carey 1.avif',                          link:'producto.html' },
+  { id:4, name:'Wayfarer Clásico — Lighting Carey',      category:'Wayfarer', parentId:1, price:48000, stock:7,  frameColor:'Lighting Carey',      lensColor:'Cristal Marrón',  images:['Wayfarer/Lighting Carey, marron 1.avif','Wayfarer/Lighting Carey, marron 2.avif','Wayfarer/Lighting Carey, marron  3.avif','Wayfarer/Lighting Carey, marron 4.avif'],                            image:'Wayfarer/Lighting Carey, marron 1.avif',         link:'producto.html' },
+  { id:5, name:'Wayfarer Clásico — Azul Transparente',   category:'Wayfarer', parentId:1, price:46000, stock:4,  frameColor:'Azul Transparente',   lensColor:'Cristal Rojo',    images:['Wayfarer/Azul transparente, rojo oscuro 1.webp','Wayfarer/Azul transparente, rojo oscuro 2.webp','Wayfarer/Azul transparente, rojo oscuro 3.webp','Wayfarer/Azul transparente, rojo oscuro 4.webp'],image:'Wayfarer/Azul transparente, rojo oscuro 1.webp', link:'producto.html' },
+  { id:6, name:'Wayfarer Clásico — Violeta Transparente',category:'Wayfarer', parentId:1, price:46000, stock:1,  frameColor:'Violeta Transparente',lensColor:'Cristal Naranja', images:['Wayfarer/Violeta transparente, naranja  1.avif','Wayfarer/Violeta transparente, naranja 2.avif','Wayfarer/Violeta transparente, naranja 3.avif','Wayfarer/Violeta transparente, naranja 4.avif'],   image:'Wayfarer/Violeta transparente, naranja  1.avif', link:'producto.html' },
+  { id:7, name:'Wayfarer Clásico — Verde Translúcido',   category:'Wayfarer', parentId:1, price:46000, stock:0,  frameColor:'Verde Translúcido',   lensColor:'Cristal Verde',   images:['Wayfarer/tanslucido verde,verde 1.webp','Wayfarer/tanslucido verde,verde 2.webp','Wayfarer/tanslucido verde,verde 3.webp','Wayfarer/tanslucido verde,verde 4.webp'],                              image:'Wayfarer/tanslucido verde,verde 1.webp',         link:'producto.html' },
+];
+
+const INIT_ORDERS = [];
+
+const PASS = 'Zevor_2026';
+
+function ls(key, fallback) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch { return fallback; }
+}
+
+/* Migración: sincroniza link y parentId con INIT_PRODUCTS en datos guardados */
+(function migrateProducts() {
+  const raw = localStorage.getItem('zv_products');
+  if (!raw) return;
+  try {
+    const saved = JSON.parse(raw);
+    let changed = false;
+    saved.forEach(p => {
+      const ref = INIT_PRODUCTS.find(i => i.id === p.id);
+      if (!p.link) {
+        p.link = ref?.link || (p.category.toLowerCase() + '.html');
+        changed = true;
+      }
+      if (!('parentId' in p)) {
+        p.parentId = ref?.parentId ?? null;
+        changed = true;
+      }
+      /* Renombrar "Wayfarer Clásico — Negro Pulido" → "Wayfarer Clásico" (modelo base) */
+      if (p.id === 1 && p.name === 'Wayfarer Clásico — Negro Pulido') {
+        p.name = 'Wayfarer Clásico';
+        changed = true;
+      }
+      /* Corregir path de imagen Clubmaster */
+      if (p.image === 'clubmaster-seccion.jpg') {
+        p.image = 'Clubmaster/clubmaster-seccion.jpg';
+        changed = true;
+      }
+      /* Migrar image → images array si no existe */
+      if (!Array.isArray(p.images)) {
+        p.images = [p.image || '', '', '', ''];
+        changed = true;
+      }
+      /* Backfill images desde INIT_PRODUCTS si el array tiene menos de 2 imágenes reales */
+      if (ref && Array.isArray(ref.images) && ref.images.filter(Boolean).length > 1) {
+        const realCount = p.images.filter(Boolean).length;
+        if (realCount < 2) {
+          p.images = [...ref.images];
+          p.image  = ref.images[0] || p.image;
+          changed  = true;
+        }
+      }
+      /* Migrar colores desde INIT_PRODUCTS si no existen */
+      if (!p.frameColor && !p.lensColor) {
+        p.frameColor = ref?.frameColor || '';
+        p.lensColor  = ref?.lensColor  || '';
+        changed = true;
+      }
+    });
+    if (changed) localStorage.setItem('zv_products', JSON.stringify(saved));
+  } catch {}
+})();
+
+/* ── VUE APP ─────────────────────────────────────── */
+createApp({
+  data() {
+    return {
+      /* auth */
+      auth: ls('zv_auth', false),
+      loginPw: '',
+      showPw: false,
+      loginError: '',
+      loginLoading: false,
+
+      /* toast */
+      toast: null,
+      toastTimer: null,
+
+      /* nav */
+      page: 'dashboard',
+      sidebarOpen: false,
+      navItems: [
+        { id:'dashboard', label:'Dashboard', emoji:'⬛' },
+        { id:'products',  label:'Productos', emoji:'🕶️' },
+        { id:'orders',    label:'Pedidos',   emoji:'📋' },
+      ],
+
+      /* products */
+      products: ls('zv_products', INIT_PRODUCTS),
+      categories: ls('zv_categories', ['Wayfarer','Aviator','Clubmaster']),
+      showNewCat: false,
+      newCatName: '',
+      editingCat: null,
+      editingCatName: '',
+      productSearch: '',
+      showProductModal: false,
+      editingProductId: null,
+      productForm: { name:'', category:'Wayfarer', price:'', stock:'', images:['','','',''], frameColor:'', lensColor:'', link:'', parentId:null, polarized:false, imagesPolarized:['','','',''], pricePolarized:'' },
+      confirmDelete: null,
+      uploadingImage: false,
+      modalStep: 'type',
+      addMode: null,
+      variantBaseName: '',
+
+      /* orders */
+      orders: ls('zv_orders', INIT_ORDERS),
+      orderFilter: 'Todos',
+      showOrderModal: false,
+      orderForm: { customer: '', product: '', total: '', status: 'Pendiente', date: '', notes: '' },
+      orderFormError: '',
+    };
+  },
+
+  mounted() {
+    /* Guarda los datos iniciales en localStorage si es la primera vez */
+    if (!localStorage.getItem('zv_products')) {
+      /* Asegurar que los productos iniciales tengan el campo images */
+      this.products = this.products.map(p => ({
+        ...p,
+        images: Array.isArray(p.images) ? p.images : [p.image||'','','',''],
+      }));
+      localStorage.setItem('zv_products', JSON.stringify(this.products));
+    }
+    /* Limpiar pedidos de ejemplo si todavía están en localStorage */
+    const storedOrders = localStorage.getItem('zv_orders');
+    const mockIds = ['ZEV-001','ZEV-002','ZEV-003','ZEV-004','ZEV-005','ZEV-006'];
+    if (storedOrders) {
+      try {
+        const parsed = JSON.parse(storedOrders);
+        const hasMock = parsed.some(o => mockIds.includes(o.id));
+        if (hasMock) {
+          const cleaned = parsed.filter(o => !mockIds.includes(o.id));
+          this.orders = cleaned;
+          localStorage.setItem('zv_orders', JSON.stringify(cleaned));
+        }
+      } catch {}
+    } else {
+      localStorage.setItem('zv_orders', JSON.stringify(this.orders));
+    }
+    if (!localStorage.getItem('zv_categories')) {
+      localStorage.setItem('zv_categories', JSON.stringify(this.categories));
+    }
+  },
+
+  computed: {
+    productsInCategory() {
+      return this.products.filter(p => p.category === this.productForm.category);
+    },
+    parentModelsInCategory() {
+      return this.products.filter(p => p.category === this.productForm.category && !p.parentId);
+    },
+    modalTitle() {
+      if (this.editingProductId) return 'Editar Producto';
+      if (this.modalStep === 'type')      return 'Agregar Producto';
+      if (this.modalStep === 'pick-base') return 'Elegir modelo base';
+      return this.addMode === 'variant'   ? 'Nueva variante' : 'Nuevo lente';
+    },
+    filteredProducts() {
+      const q = this.productSearch.toLowerCase();
+      return this.products.filter(p =>
+        p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q)
+      );
+    },
+    filteredOrders() {
+      if (this.orderFilter === 'Todos') return this.orders;
+      return this.orders.filter(o => o.status === this.orderFilter);
+    },
+    criticalStock() {
+      return this.products.filter(p => p.stock <= 5);
+    },
+    recentOrders() {
+      return [...this.orders].reverse().slice(0, 5);
+    },
+    orderCounts() {
+      const c = {};
+      this.orders.forEach(o => c[o.status] = (c[o.status] || 0) + 1);
+      return c;
+    },
+    stats() {
+      const sales = this.orders.filter(o => o.status !== 'Pendiente').reduce((s, o) => s + o.total, 0);
+      const pending = this.orders.filter(o => o.status === 'Pendiente').length;
+      const active = this.products.filter(p => p.stock > 0).length;
+      const crit = this.criticalStock.length;
+      return [
+        { title:'Ventas Totales',      value: this.fmt(sales), sub:'Pedidos confirmados',          color:'green', alert: false },
+        { title:'Pedidos Pendientes',  value: pending,          sub:'Sin confirmar',                color:'amber', alert: pending > 0 },
+        { title:'Productos Activos',   value: active,           sub:`de ${this.products.length} en catálogo`, color:'blue', alert: false },
+        { title:'Stock Crítico',       value: crit,             sub:'≤ 5 unidades o agotado',       color:'red',   alert: crit > 0 },
+      ];
+    },
+  },
+
+  methods: {
+    /* ─ Auth ─ */
+    doLogin() {
+      this.loginLoading = true;
+      setTimeout(() => {
+        if (this.loginPw === PASS) {
+          localStorage.setItem('zv_auth', 'true');
+          this.auth = true;
+        } else {
+          this.loginError = 'Contraseña incorrecta. Intentá de nuevo.';
+          this.loginPw = '';
+        }
+        this.loginLoading = false;
+      }, 500);
+    },
+    doLogout() {
+      localStorage.removeItem('zv_auth');
+      this.auth = false;
+      this.loginPw = '';
+      this.loginError = '';
+    },
+
+    /* ─ Categories ─ */
+    renameCategory() {
+      const newName = this.editingCatName.trim();
+      const oldName = this.editingCat;
+      if (!newName || newName === oldName) { this.editingCat = null; return; }
+      const idx = this.categories.indexOf(oldName);
+      if (idx !== -1) this.categories.splice(idx, 1, newName);
+      /* Actualizar todos los productos que usaban el nombre viejo */
+      this.products.forEach(p => { if (p.category === oldName) p.category = newName; });
+      if (this.productForm.category === oldName) this.productForm.category = newName;
+      localStorage.setItem('zv_categories', JSON.stringify(this.categories));
+      localStorage.setItem('zv_products', JSON.stringify(this.products));
+      this.editingCat = null;
+    },
+    addCategory() {
+      const name = this.newCatName.trim();
+      if (!name) return;
+      if (!this.categories.includes(name)) {
+        this.categories.push(name);
+        localStorage.setItem('zv_categories', JSON.stringify(this.categories));
+      }
+      this.productForm.category = name;
+      this.showNewCat = false;
+      this.newCatName = '';
+    },
+
+    /* ─ Products ─ */
+    stockBadge(stock) {
+      if (stock === 0) return { label:'Agotado',           cls:'bg-red-100 text-red-700' };
+      if (stock <= 5)  return { label:'¡Últimas unidades!', cls:'bg-amber-100 text-amber-700' };
+      return                  { label:'Disponible',         cls:'bg-green-100 text-green-700' };
+    },
+    openNewProduct() {
+      this.productForm = { name:'', category:'Wayfarer', price:'', stock:'', images:['','','',''], frameColor:'', lensColor:'', link:'', parentId:null, polarized:false, imagesPolarized:['','','',''], pricePolarized:'' };
+      this.editingProductId = null;
+      this.addMode = null;
+      this.variantBaseName = '';
+      this.modalStep = 'type';
+      this.showProductModal = true;
+    },
+    openEditProduct(p) {
+      const imgs    = Array.isArray(p.images)         ? [...p.images,'','','',''].slice(0,4)         : [p.image||'','','',''];
+      const imgsPol = Array.isArray(p.imagesPolarized) ? [...p.imagesPolarized,'','','',''].slice(0,4) : ['','','',''];
+      this.productForm = { ...p, images: imgs, polarized: p.polarized || false, imagesPolarized: imgsPol, pricePolarized: p.pricePolarized || '' };
+      this.editingProductId = p.id;
+      this.addMode = null;
+      this.modalStep = 'form';
+      this.showProductModal = true;
+    },
+    selectAddMode(mode) {
+      this.addMode = mode;
+      this.modalStep = mode === 'variant' ? 'pick-base' : 'form';
+    },
+    selectBaseProduct(p) {
+      this.variantBaseName = p.name;
+      this.productForm = {
+        name: p.name,
+        category: p.category,
+        price: p.price,
+        stock: 0,
+        images: ['','','',''],
+        frameColor: '',
+        lensColor: '',
+        link: p.link || (p.category.toLowerCase() + '.html'),
+        parentId: p.id,
+        polarized: false,
+        imagesPolarized: ['','','',''],
+        pricePolarized: '',
+      };
+      this.modalStep = 'form';
+    },
+    goBackModal() {
+      if (this.modalStep === 'form')           this.modalStep = this.addMode === 'variant' ? 'pick-base' : 'type';
+      else if (this.modalStep === 'pick-base') this.modalStep = 'type';
+    },
+    saveProduct() {
+      if (!this.productForm.name || this.productForm.price === '' || this.productForm.stock === '') return;
+      const images         = (this.productForm.images         || []).slice(0, 4);
+      const imagesPolarized = (this.productForm.imagesPolarized || []).slice(0, 4);
+      const p = {
+        ...this.productForm,
+        images,
+        imagesPolarized,
+        image: images[0] || '',
+        pricePolarized: this.productForm.polarized && this.productForm.pricePolarized !== ''
+            ? Number(this.productForm.pricePolarized)
+            : null,
+        price: Number(this.productForm.price),
+        stock: Number(this.productForm.stock),
+      };
+      if (this.editingProductId) {
+        const idx = this.products.findIndex(x => x.id === this.editingProductId);
+        if (idx >= 0) this.products[idx] = { ...p, id: this.editingProductId };
+      } else {
+        this.products.push({ ...p, id: Date.now() });
+      }
+      if (this.persist()) {
+        this.showProductModal = false;
+        this.showToast('ok', this.editingProductId ? '✓ Cambios guardados correctamente' : '✓ Producto agregado al catálogo');
+      }
+    },
+    updateStock(id, val) {
+      const v = parseInt(val);
+      if (!isNaN(v) && v >= 0) {
+        const idx = this.products.findIndex(p => p.id === id);
+        if (idx >= 0) this.products[idx].stock = v;
+        this.persist();
+      }
+    },
+    deleteProduct() {
+      this.products = this.products.filter(p => p.id !== this.confirmDelete);
+      this.persist();
+      this.confirmDelete = null;
+    },
+
+    /* Guarda en localStorage con manejo de error de cuota */
+    persist() {
+      try {
+        localStorage.setItem('zv_products', JSON.stringify(this.products));
+        return true;
+      } catch (e) {
+        /* QuotaExceededError — las imágenes ocupan demasiado espacio */
+        this.showToast('error',
+          'Error al guardar: las imágenes son muy pesadas. Intentá con imágenes más pequeñas.'
+        );
+        return false;
+      }
+    },
+
+    /* ─ Exportar productos.json para publicar en GitHub Pages ─ */
+    exportarJSON() {
+      /* Construir el objeto que espera init-data.js */
+      const data = {
+        version:    1,
+        categories: this.categories,
+        products:   this.products,
+      };
+      const json = JSON.stringify(data, null, 2);
+      const blob = new Blob([json], { type: 'application/json; charset=utf-8' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = 'productos.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      this.showToast('ok',
+        '✓ productos.json descargado — reemplazá el archivo en la carpeta del proyecto y subí a GitHub'
+      );
+    },
+
+    showToast(type, msg, duration = 4000) {
+      clearTimeout(this.toastTimer);
+      this.toast = { type, msg };
+      this.toastTimer = setTimeout(() => { this.toast = null; }, duration);
+    },
+
+    /* ─ Orders ─ */
+    openOrderModal() {
+      const today = new Date().toISOString().slice(0, 10);
+      this.orderForm = { customer: '', product: '', total: '', status: 'Pendiente', date: today, notes: '' };
+      this.orderFormError = '';
+      this.showOrderModal = true;
+    },
+    saveOrder() {
+      if (!this.orderForm.customer.trim()) { this.orderFormError = 'El nombre del cliente es obligatorio.'; return; }
+      if (!this.orderForm.product.trim())  { this.orderFormError = 'El producto es obligatorio.'; return; }
+      const nextNum = this.orders.length + 1;
+      const id = 'ZEV-' + String(nextNum).padStart(3, '0');
+      const order = {
+        id,
+        customer: this.orderForm.customer.trim(),
+        product:  this.orderForm.product.trim(),
+        total:    Number(this.orderForm.total) || 0,
+        status:   this.orderForm.status,
+        date:     this.orderForm.date || new Date().toISOString().slice(0, 10),
+        notes:    this.orderForm.notes.trim(),
+        manual:   true,
+      };
+      this.orders.push(order);
+      localStorage.setItem('zv_orders', JSON.stringify(this.orders));
+      this.showOrderModal = false;
+      this.showToast('success', 'Pedido ' + id + ' creado correctamente.');
+    },
+    deleteOrder(id) {
+      if (!confirm('¿Eliminar el pedido ' + id + '? Esta acción no se puede deshacer.')) return;
+      this.orders = this.orders.filter(o => o.id !== id);
+      localStorage.setItem('zv_orders', JSON.stringify(this.orders));
+      this.showToast('success', 'Pedido eliminado.');
+    },
+    updateOrderStatus(id, status) {
+      const idx = this.orders.findIndex(o => o.id === id);
+      if (idx >= 0) this.orders[idx].status = status;
+      localStorage.setItem('zv_orders', JSON.stringify(this.orders));
+    },
+    orderCls(s) {
+      return {
+        Pendiente: 'bg-gray-100 text-gray-600',
+        Pagado:    'bg-blue-100 text-blue-700',
+        Enviado:   'bg-amber-100 text-amber-700',
+        Entregado: 'bg-green-100 text-green-700',
+      }[s] || 'bg-gray-100 text-gray-600';
+    },
+
+    /* ─ Image upload ─ */
+    handleImageUpload(event, idx) {
+      const file = event.target.files[0];
+      if (!file) return;
+      this.uploadingImage = true;
+      compressImage(file, 650, 650, 0.72).then(dataUrl => {
+        this.productForm.images.splice(idx, 1, dataUrl);
+        this.uploadingImage = false;
+        event.target.value = '';
+      });
+    },
+    removeImage(idx) {
+      this.productForm.images.splice(idx, 1, '');
+    },
+    handlePolarizedImageUpload(event, idx) {
+      const file = event.target.files[0];
+      if (!file) return;
+      this.uploadingImage = true;
+      compressImage(file, 650, 650, 0.72).then(dataUrl => {
+        this.productForm.imagesPolarized.splice(idx, 1, dataUrl);
+        this.uploadingImage = false;
+        event.target.value = '';
+      });
+    },
+    removePolarizedImage(idx) {
+      this.productForm.imagesPolarized.splice(idx, 1, '');
+    },
+
+    /* ─ Util ─ */
+    fmt(n) {
+      return '$' + Number(n).toLocaleString('es-AR');
+    },
+  },
+}).mount('#app');
+</script>
+</body>
+</html>

@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo Ray-Ban — ZEVOR</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="catalogo.css">
+</head>
+<body>
+
+<header class="nav nav--scrolled" id="navbar">
+    <div class="nav__inner">
+        <a href="index.html" class="nav__logo">ZEVOR</a>
+        <nav class="nav__links">
+            <a href="catalogo.html" class="nav__link">Ray-Ban</a>
+            <a href="index.html#autenticidad" class="nav__link">La Experiencia ZEVOR</a>
+            <a href="index.html#journal" class="nav__link">Journal</a>
+        </nav>
+        <div class="nav__actions">
+            <span class="cart-icon-wrap">
+                <button class="nav__icon" data-cart-toggle aria-label="Carrito">
+                    <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+                        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+                    </svg>
+                </button>
+                <span class="cart-badge" style="display:none"></span>
+            </span>
+            <button class="nav__burger" id="burgerBtn" aria-label="Abrir menú" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </div>
+</header>
+
+<nav class="nav__drawer" id="mobileDrawer">
+    <a href="catalogo.html" class="nav__drawer-link">Ray-Ban</a>
+    <a href="index.html#autenticidad" class="nav__drawer-link">La Experiencia ZEVOR</a>
+    <a href="index.html#journal" class="nav__drawer-link">Journal</a>
+</nav>
+
+<!-- PANEL DROPDOWN (cuelga del nav link "RAY-BAN") -->
+<div class="page-hero__menu" id="heroMenu">
+    <div class="hero-menu__inner">
+        <p class="hero-menu__label">COLECCIÓN RAY-BAN</p>
+        <div class="hero-menu__links" id="heroCatLinks">
+            <button type="button" id="linkTodos" onclick="selectCat(null)" class="hero-menu__link">Todos</button>
+            <!-- categorías dinámicas insertadas por JS -->
+            <button type="button" id="btnPolarized" onclick="togglePolarized()" class="hero-menu__link">Polarizados</button>
+        </div>
+    </div>
+</div>
+
+<!-- HERO: título en negro -->
+<section class="page-hero" id="catalogHero">
+    <div class="page-hero__title-view" id="heroTitleView">
+        <div class="page-hero__inner">
+            <h1 class="page-hero__title" id="heroTitle">Colección Ray-Ban</h1>
+        </div>
+    </div>
+</section>
+
+<!-- GRILLA DE PRODUCTOS (siempre visible abajo) -->
+<section class="catalog-section">
+    <div class="container">
+        <div class="catalog-grid" id="grid-todos"></div>
+        <div class="catalog-pagination" id="pagination"></div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer__grid">
+            <div class="footer__brand">
+                <span class="footer__brand-logo">ZEVOR</span>
+                <p class="footer__brand-line">La diferencia no se explica.<br>Se lleva puesta.</p>
+            </div>
+            <div class="footer__newsletter">
+                <span class="footer__section-title">Acceso Exclusivo</span>
+                <p class="footer__newsletter-desc">Sé el primero en enterarte de novedades y lanzamientos exclusivos.</p>
+                <form class="newsletter-form" onsubmit="return false;">
+                    <input type="email" class="newsletter-form__input" placeholder="Tu correo electrónico" autocomplete="email">
+                    <button type="submit" class="newsletter-form__btn">→</button>
+                </form>
+            </div>
+            <div class="footer__info">
+                <span class="footer__section-title">Información</span>
+                <ul class="footer__links-list">
+                    <li><a href="#">Contáctanos</a></li>
+                    <li><a href="#">Envíos y Devoluciones</a></li>
+                    <li><a href="#">Autenticidad</a></li>
+                    <li><a href="#">Preguntas Frecuentes</a></li>
+                </ul>
+            </div>
+            <div class="footer__social">
+                <span class="footer__section-title">Síguenos</span>
+                <div class="social-row">
+                    <a href="https://www.instagram.com/zevorstore_/" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="Instagram">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+                            <rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+                        </svg>
+                    </a>
+                    <a href="https://www.tiktok.com/@zevor_store" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="TikTok">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+                            <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/>
+                        </svg>
+                    </a>
+                    <a href="https://wa.me/5492604367870" target="_blank" rel="noopener noreferrer" class="social-btn" aria-label="WhatsApp">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+                            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="footer__bar">
+            <p>&copy; 2026 ZEVOR. Todos los derechos reservados.</p>
+            <p>Diseñado para quienes eligen la diferencia.</p>
+        </div>
+    </div>
+</footer>
+
+<script src="init-data.js"></script>
+<script>
+    const burgerBtn    = document.getElementById('burgerBtn');
+    const mobileDrawer = document.getElementById('mobileDrawer');
+    burgerBtn.addEventListener('click', () => {
+        const isOpen = mobileDrawer.classList.toggle('nav__drawer--open');
+        burgerBtn.classList.toggle('nav__burger--open', isOpen);
+        burgerBtn.setAttribute('aria-expanded', isOpen);
+    });
+
+    /* ── ESTADO ── */
+    let _products      = [];
+    let _polarizedMode = new URLSearchParams(location.search).get('polarized') === '1';
+    let _catParam      = new URLSearchParams(location.search).get('cat'); // null = Todos
+    let _currentPage   = 1;
+    const ITEMS_PER_PAGE = 16; // 4 columnas × 4 filas
+
+    /* ── DROPDOWN: aparece al hover del link "RAY-BAN", se cierra al salir ── */
+    (function() {
+        const menu    = document.getElementById('heroMenu');
+        const navLink = document.querySelector('a.nav__link[href="catalogo.html"]');
+        let _t = null;
+
+        function show() { clearTimeout(_t); menu.style.display = 'block'; }
+        function hide() { _t = setTimeout(() => { menu.style.display = 'none'; }, 150); }
+
+        if (navLink) {
+            navLink.addEventListener('mouseenter', show);
+            navLink.addEventListener('mouseleave', hide);
+        }
+        /* Mantener abierto mientras el mouse está dentro del panel */
+        menu.addEventListener('mouseenter', show);
+        menu.addEventListener('mouseleave', hide);
+    })();
+
+    /* ── NAV DINÁMICO DE CATEGORÍAS (panel blanco) ── */
+    (function buildCatNav() {
+        const cats = JSON.parse(localStorage.getItem('zv_categories') || '["Wayfarer","Wayfarer Reverse","Aviator","Clubmaster","Justin","Erika","Emy","Zuri","Lady Burbank","Bill","Corrigan","Hawkeye","Ferrari"]');
+        const nav  = document.getElementById('heroCatLinks');
+        const pol  = document.getElementById('btnPolarized');
+
+        cats.forEach(cat => {
+            const btn = document.createElement('button');
+            btn.type      = 'button';
+            btn.id        = 'catLink_' + CSS.escape(cat);
+            btn.className = 'hero-menu__link' + (!_polarizedMode && _catParam === cat ? ' hero-menu__link--active' : '');
+            btn.textContent = cat;
+            btn.setAttribute('data-cat-btn', '');
+            btn.onclick   = () => selectCat(cat);
+            nav.insertBefore(btn, pol);
+        });
+
+        if (!_catParam && !_polarizedMode) {
+            document.getElementById('linkTodos').classList.add('hero-menu__link--active');
+        }
+        if (_polarizedMode) {
+            document.getElementById('btnPolarized').classList.add('hero-menu__link--active');
+        }
+
+        /* Aplicar clase correcta a los botones estáticos */
+        document.getElementById('linkTodos').classList.add('hero-menu__link');
+        document.getElementById('linkTodos').classList.remove('hero-cat__link');
+        document.getElementById('btnPolarized').classList.add('hero-menu__link');
+        document.getElementById('btnPolarized').classList.remove('hero-cat__link');
+    })();
+
+    /* ── SELECCIONAR CATEGORÍA (sin recargar la página) ── */
+    function selectCat(cat) {
+        _catParam      = cat;
+        _polarizedMode = false;
+        _currentPage   = 1;
+        document.querySelectorAll('.hero-menu__link').forEach(l => l.classList.remove('hero-menu__link--active'));
+        const activeEl = cat ? document.getElementById('catLink_' + CSS.escape(cat)) : document.getElementById('linkTodos');
+        if (activeEl) activeEl.classList.add('hero-menu__link--active');
+        updateHeroTitle();
+        renderCatalog();
+        const url = cat ? 'catalogo.html?cat=' + encodeURIComponent(cat) : 'catalogo.html';
+        history.replaceState(null, '', url);
+    }
+
+    /* ── TÍTULO DEL HÉROE SEGÚN SELECCIÓN ── */
+    function updateHeroTitle() {
+        const titleEl = document.getElementById('heroTitle');
+        if (_polarizedMode) {
+            titleEl.textContent = 'Polarizados';
+            document.title = 'Polarizados — ZEVOR';
+        } else if (_catParam) {
+            titleEl.textContent = _catParam;
+            document.title = _catParam + ' — ZEVOR';
+        } else {
+            titleEl.textContent = 'Colección Ray-Ban';
+            document.title = 'Catálogo Ray-Ban — ZEVOR';
+        }
+    }
+
+    /* ── CARGA INICIAL ── */
+    (function() {
+        const raw = localStorage.getItem('zv_products');
+        if (!raw) return;
+        try { _products = JSON.parse(raw); } catch { return; }
+        updateHeroTitle();
+        renderCatalog();
+    })();
+
+    function fmt(n) { return '$' + Number(n).toLocaleString('es-AR'); }
+    function esc(s) { return String(s||'').replace(/'/g,"&#39;").replace(/"/g,'&quot;'); }
+
+    function buildCard(parent, usePolarized) {
+        const agotado  = parent.stock === 0;
+        const ultimas  = parent.stock > 0 && parent.stock <= 5;
+        const regImg   = (parent.images && parent.images[0]) || parent.image || '';
+        const polImg   = (parent.imagesPolarized && parent.imagesPolarized[0]) || '';
+        /* Usa foto polarizada en modo polarizado; en modo normal usa regular y si no hay, la polarizada */
+        const img      = usePolarized ? (polImg || regImg) : (regImg || polImg);
+        /* Es polarizado si tiene el flag activo Y fotos polarizadas cargadas */
+        const esPol    = parent.polarized === true && !!polImg;
+        const colors   = [parent.frameColor, parent.lensColor].filter(Boolean).join(' / ');
+        var safeId      = esc(String(parent.id));
+        var safeName    = esc(parent.name);
+        var safeImg     = esc(img);
+        var safeVariant = esc(colors);
+        var safePrice   = Number(parent.price) || 0;
+
+        return `
+            <article class="cat-card${agotado ? ' cat-card--agotado' : ''}">
+                <a href="producto.html?id=${parent.id}" class="cat-card__link">
+                    <div class="cat-card__frame${img ? '' : ' cat-card__frame--placeholder'}">
+                        ${img
+                            ? `<img class="cat-card__img" src="${img}" alt="${safeName}" loading="lazy">`
+                            : '<span class="cat-placeholder-label">Imagen próximamente</span>'}
+                        ${esPol ? '<span class="cat-badge" style="background:#3b82f6;color:#fff">Polarizado</span>' : ''}
+                        ${!esPol && agotado ? '<span class="cat-badge cat-badge--agotado">Agotado</span>' : ''}
+                        ${!esPol && ultimas ? '<span class="cat-badge cat-badge--ultimas">¡Últimas!</span>' : ''}
+                    </div>
+                    <div class="cat-card__body">
+                        <h3 class="cat-card__name">${safeName}</h3>
+                        ${colors ? `<p class="cat-card__variant">${safeVariant}</p>` : ''}
+                        <p class="cat-card__price">${fmt(safePrice)}</p>
+                    </div>
+                </a>
+                ${!agotado ? `<button class="cat-card__add"
+                    data-pid="${safeId}"
+                    data-pname="${safeName}"
+                    data-pprice="${safePrice}"
+                    data-pimg="${safeImg}"
+                    data-pvariant="${safeVariant}"
+                    type="button">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                    Agregar al carrito
+                </button>` : ''}
+            </article>`;
+    }
+
+    function renderCatalog() {
+        /* Releer siempre desde localStorage para tener datos frescos */
+        try {
+            const raw = localStorage.getItem('zv_products');
+            if (raw) _products = JSON.parse(raw);
+        } catch {}
+
+        const grid = document.getElementById('grid-todos');
+        if (!grid) return;
+        let parents;
+        if (_polarizedMode) {
+            const esPolarizado = p =>
+                p.polarized === true && p.imagesPolarized && p.imagesPolarized.some(Boolean);
+            parents = _products.filter(p => {
+                if (!esPolarizado(p)) return false;
+                if (p.parentId != null) return true;
+                return !_products.some(c => c.parentId === p.id && esPolarizado(c));
+            });
+        } else {
+            parents = _products.filter(p => !p.parentId);
+            if (_catParam) parents = parents.filter(p => p.category === _catParam);
+        }
+
+        const totalPages = Math.max(1, Math.ceil(parents.length / ITEMS_PER_PAGE));
+        /* Si la página actual quedó fuera de rango (ej. al filtrar), volver a 1 */
+        if (_currentPage > totalPages) _currentPage = 1;
+
+        const start = (_currentPage - 1) * ITEMS_PER_PAGE;
+        const pageItems = parents.slice(start, start + ITEMS_PER_PAGE);
+
+        const emptyMsg = _polarizedMode
+            ? 'No hay lentes con versión polarizada cargados aún.'
+            : _catParam
+                ? `No hay productos en la categoría "${_catParam}" aún.`
+                : 'No hay productos en el catálogo aún.';
+
+        grid.innerHTML = parents.length
+            ? pageItems.map(p => buildCard(p, _polarizedMode)).join('')
+            : `<p style="grid-column:1/-1;text-align:center;color:#aaa;padding:3rem">${emptyMsg}</p>`;
+
+        renderPagination(totalPages);
+    }
+
+    function renderPagination(totalPages) {
+        const container = document.getElementById('pagination');
+        if (!container) return;
+        if (totalPages <= 1) { container.innerHTML = ''; return; }
+
+        let html = '<div class="pagination__inner">';
+        html += `<button class="pagination__btn pagination__btn--prev" onclick="goToPage(${_currentPage - 1})" ${_currentPage === 1 ? 'disabled' : ''} aria-label="Página anterior">&#8592;</button>`;
+        for (let i = 1; i <= totalPages; i++) {
+            html += `<button class="pagination__btn${i === _currentPage ? ' pagination__btn--active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+        }
+        html += `<button class="pagination__btn pagination__btn--next" onclick="goToPage(${_currentPage + 1})" ${_currentPage === totalPages ? 'disabled' : ''} aria-label="Página siguiente">&#8594;</button>`;
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    function goToPage(page) {
+        _currentPage = page;
+        renderCatalog();
+        document.querySelector('.catalog-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    /* Actualizar cuando productos.json se cargó asincrónicamente */
+    document.addEventListener('zv-products-updated', function(e) {
+        renderCatalog();
+        /* También reconstruir el nav de categorías con las categorías actualizadas */
+        const cats = JSON.parse(localStorage.getItem('zv_categories') || '[]');
+        const nav  = document.getElementById('heroCatLinks');
+        const pol  = document.getElementById('btnPolarized');
+        if (nav && pol) {
+            /* Eliminar botones de categoría generados previamente */
+            nav.querySelectorAll('[data-cat-btn]').forEach(function(b) { b.remove(); });
+            cats.forEach(function(cat) {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.id   = 'catLink_' + CSS.escape(cat);
+                btn.className = 'hero-menu__link' + (!_polarizedMode && _catParam === cat ? ' hero-menu__link--active' : '');
+                btn.textContent = cat;
+                btn.setAttribute('data-cat-btn', '');
+                btn.onclick = function() { selectCat(cat); };
+                nav.insertBefore(btn, pol);
+            });
+        }
+    });
+
+    /* Actualizar automáticamente si el admin cambia datos en otra pestaña */
+    window.addEventListener('storage', e => {
+        if (e.key === 'zv_products') renderCatalog();
+        if (e.key === 'zv_cart' && window.ZV_CART) ZV_CART.updateBadges();
+    });
+
+    /* Delegación para "Agregar al carrito" */
+    document.getElementById('grid-todos').addEventListener('click', function(e) {
+        var btn = e.target.closest('.cat-card__add');
+        if (!btn || btn.disabled) return;
+        ZV_CART.addItem({
+            id:      btn.dataset.pid,
+            name:    btn.dataset.pname,
+            price:   parseFloat(btn.dataset.pprice) || 0,
+            img:     btn.dataset.pimg,
+            variant: btn.dataset.pvariant
+        });
+        btn.textContent = '✓ Agregado';
+        btn.disabled = true;
+        setTimeout(function() {
+            btn.disabled = false;
+            btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg> Agregar al carrito';
+        }, 1800);
+    });
+
+    function togglePolarized() {
+        if (_polarizedMode) return;
+        _catParam      = null;
+        _polarizedMode = true;
+        _currentPage   = 1;
+        document.querySelectorAll('.hero-menu__link').forEach(l => l.classList.remove('hero-menu__link--active'));
+        document.getElementById('btnPolarized').classList.add('hero-menu__link--active');
+        updateHeroTitle();
+        renderCatalog();
+    }
+
+</script>
+<script src="cart.js"></script>
+</body>
+</html>
