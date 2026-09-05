@@ -86,7 +86,7 @@
       </div>
 
       <!-- Nav -->
-      <nav class="flex-1 px-3 py-5">
+      <nav class="flex-1 px-3 py-5 overflow-y-auto">
         <p class="text-zinc-600 text-xs tracking-widest uppercase px-3 mb-3">Menú</p>
         <button v-for="item in navItems" :key="item.id"
           @click="page=item.id; sidebarOpen=false"
