@@ -107,6 +107,15 @@
         <p class="text-zinc-600 text-xs px-3 mt-1.5 leading-tight">Descarga productos.json y súbela a GitHub para publicar cambios</p>
       </div>
 
+      <!-- Liberar espacio -->
+      <div class="px-3 pb-2 border-t border-zinc-800 pt-3">
+        <button @click="limpiarImagenes"
+          class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm bg-blue-700/20 text-blue-400 hover:bg-blue-700/40 transition-all font-medium">
+          <span class="text-base">🗜️</span> Liberar espacio
+        </button>
+        <p class="text-zinc-600 text-xs px-3 mt-1.5 leading-tight">Recomprime las imágenes guardadas si el admin no deja guardar cambios</p>
+      </div>
+
       <!-- Logout -->
       <div class="px-3 py-4 border-t border-zinc-800">
         <button @click="doLogout"
@@ -1109,6 +1118,39 @@ createApp({
     },
 
     /* ─ Exportar productos.json para publicar en GitHub Pages ─ */
+    async limpiarImagenes() {
+      this.showToast('ok', 'Comprimiendo imágenes, esperá...');
+      const maxW = 400, maxH = 400, q = 0.55;
+      const recompress = (src) => {
+        if (!src || !src.startsWith('data:')) return Promise.resolve(src);
+        return new Promise(resolve => {
+          const img = new Image();
+          img.onload = () => {
+            let w = img.width, h = img.height;
+            if (w > maxW || h > maxH) {
+              const ratio = Math.min(maxW / w, maxH / h);
+              w = Math.round(w * ratio); h = Math.round(h * ratio);
+            }
+            const c = document.createElement('canvas');
+            c.width = w; c.height = h;
+            c.getContext('2d').drawImage(img, 0, 0, w, h);
+            resolve(c.toDataURL('image/jpeg', q));
+          };
+          img.onerror = () => resolve(src);
+          img.src = src;
+        });
+      };
+      for (const p of this.products) {
+        p.image  = await recompress(p.image);
+        p.images = await Promise.all((p.images || []).map(recompress));
+        if (Array.isArray(p.imagesPolarized))
+          p.imagesPolarized = await Promise.all(p.imagesPolarized.map(recompress));
+      }
+      if (this.persist()) {
+        this.showToast('ok', '✓ Espacio liberado. Ya podés guardar cambios.');
+      }
+    },
+
     exportarJSON() {
       /* Construir el objeto que espera init-data.js */
       const data = {
@@ -1189,7 +1231,7 @@ createApp({
       const file = event.target.files[0];
       if (!file) return;
       this.uploadingImage = true;
-      compressImage(file, 650, 650, 0.72).then(dataUrl => {
+      compressImage(file, 400, 400, 0.55).then(dataUrl => {
         this.productForm.images.splice(idx, 1, dataUrl);
         this.uploadingImage = false;
         event.target.value = '';
@@ -1202,7 +1244,7 @@ createApp({
       const file = event.target.files[0];
       if (!file) return;
       this.uploadingImage = true;
-      compressImage(file, 650, 650, 0.72).then(dataUrl => {
+      compressImage(file, 400, 400, 0.55).then(dataUrl => {
         this.productForm.imagesPolarized.splice(idx, 1, dataUrl);
         this.uploadingImage = false;
         event.target.value = '';
