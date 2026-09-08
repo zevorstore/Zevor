@@ -630,16 +630,41 @@
                 <button v-if="productForm.images[idx]" type="button" @click="removeImage(idx)"
                   class="absolute top-0.5 right-0.5 bg-black/60 hover:bg-red-600 text-white rounded-full w-4 h-4 text-xs leading-none flex items-center justify-center transition-colors">✕</button>
               </div>
-              <!-- Upload -->
-              <label :class="['flex items-center justify-center border rounded-lg py-1.5 text-xs cursor-pointer transition-colors',
-                uploadingImage ? 'border-gray-100 text-gray-300 cursor-not-allowed' : 'border-gray-200 text-gray-500 hover:border-yellow-600 hover:text-yellow-700']">
-                + Subir
-                <input type="file" accept="image/*" class="hidden" :disabled="uploadingImage"
-                  @change="e => handleImageUpload(e, idx)" />
-              </label>
+              <!-- Upload / Pick -->
+              <div class="flex gap-1">
+                <label :class="['flex-1 flex items-center justify-center border rounded-lg py-1.5 text-xs cursor-pointer transition-colors',
+                  uploadingImage ? 'border-gray-100 text-gray-300 cursor-not-allowed' : 'border-gray-200 text-gray-500 hover:border-yellow-600 hover:text-yellow-700']">
+                  + Subir
+                  <input type="file" accept="image/*" class="hidden" :disabled="uploadingImage"
+                    @change="e => handleImageUpload(e, idx)" />
+                </label>
+                <button type="button" @click="openImagePicker(idx, 'normal')"
+                  :class="['border rounded-lg py-1.5 px-1.5 text-xs transition-colors',
+                  (imagePicker.open && imagePicker.slot===idx && imagePicker.type==='normal') ? 'border-yellow-500 bg-yellow-100 text-yellow-700' : 'border-gray-200 text-gray-400 hover:border-yellow-400 hover:text-yellow-600']"
+                  title="Elegir archivo del proyecto">📂</button>
+              </div>
             </div>
           </div>
           <p v-if="uploadingImage" class="text-xs text-gray-400 text-center mt-2">Procesando imagen...</p>
+
+          <!-- Buscador de imágenes del proyecto -->
+          <div v-if="imagePicker.open && imagePicker.type==='normal'" class="mt-3 border border-yellow-200 rounded-xl bg-yellow-50 p-3">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold text-yellow-800">Foto {{ imagePicker.slot + 1 }} — elegir archivo del proyecto</span>
+              <button type="button" @click="imagePicker.open=false" class="text-yellow-500 hover:text-red-500 text-xs font-bold">✕</button>
+            </div>
+            <input v-model="imagePicker.query" type="text" placeholder="Buscar por nombre, color, modelo..."
+              class="w-full border border-yellow-200 rounded-lg px-3 py-2 text-sm mb-2 focus:outline-none focus:border-yellow-500 bg-white" autofocus />
+            <div class="max-h-48 overflow-y-auto space-y-0.5 rounded-lg">
+              <button v-for="imgPath in filteredImages.slice(0,80)" :key="imgPath" type="button"
+                @click="pickImage(imgPath)"
+                class="w-full text-left px-3 py-1.5 text-xs rounded-lg hover:bg-yellow-200 text-gray-700 font-mono truncate">
+                {{ imgPath }}
+              </button>
+              <p v-if="filteredImages.length === 0" class="text-xs text-gray-400 text-center py-4">Sin resultados para "{{ imagePicker.query }}"</p>
+              <p v-if="filteredImages.length > 80" class="text-xs text-gray-400 text-center py-2">Mostrando 80 de {{ filteredImages.length }} — filtrá más para ver el resto</p>
+            </div>
+          </div>
         </div>
 
         <!-- Imágenes versión polarizada -->
@@ -666,12 +691,36 @@
                 <button v-if="productForm.imagesPolarized[idx]" type="button" @click="removePolarizedImage(idx)"
                   class="absolute top-0.5 right-0.5 bg-black/60 hover:bg-red-600 text-white rounded-full w-4 h-4 text-xs leading-none flex items-center justify-center transition-colors">✕</button>
               </div>
-              <label :class="['flex items-center justify-center border rounded-lg py-1.5 text-xs cursor-pointer transition-colors',
-                uploadingImage ? 'border-gray-100 text-gray-300 cursor-not-allowed' : 'border-blue-200 text-blue-500 hover:border-blue-500 hover:text-blue-700']">
-                + Subir
-                <input type="file" accept="image/*" class="hidden" :disabled="uploadingImage"
-                  @change="e => handlePolarizedImageUpload(e, idx)" />
-              </label>
+              <div class="flex gap-1">
+                <label :class="['flex-1 flex items-center justify-center border rounded-lg py-1.5 text-xs cursor-pointer transition-colors',
+                  uploadingImage ? 'border-gray-100 text-gray-300 cursor-not-allowed' : 'border-blue-200 text-blue-500 hover:border-blue-500 hover:text-blue-700']">
+                  + Subir
+                  <input type="file" accept="image/*" class="hidden" :disabled="uploadingImage"
+                    @change="e => handlePolarizedImageUpload(e, idx)" />
+                </label>
+                <button type="button" @click="openImagePicker(idx, 'polarized')"
+                  :class="['border rounded-lg py-1.5 px-1.5 text-xs transition-colors',
+                  (imagePicker.open && imagePicker.slot===idx && imagePicker.type==='polarized') ? 'border-blue-500 bg-blue-100 text-blue-700' : 'border-blue-100 text-blue-300 hover:border-blue-400 hover:text-blue-600']"
+                  title="Elegir archivo del proyecto">📂</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Buscador de imágenes polarizadas del proyecto -->
+          <div v-if="imagePicker.open && imagePicker.type==='polarized'" class="mt-3 border border-blue-200 rounded-xl bg-blue-50 p-3">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold text-blue-800">Foto polarizada {{ imagePicker.slot + 1 }} — elegir archivo del proyecto</span>
+              <button type="button" @click="imagePicker.open=false" class="text-blue-400 hover:text-red-500 text-xs font-bold">✕</button>
+            </div>
+            <input v-model="imagePicker.query" type="text" placeholder="Buscar por nombre, color, modelo..."
+              class="w-full border border-blue-200 rounded-lg px-3 py-2 text-sm mb-2 focus:outline-none focus:border-blue-500 bg-white" />
+            <div class="max-h-48 overflow-y-auto space-y-0.5 rounded-lg">
+              <button v-for="imgPath in filteredImages.slice(0,80)" :key="imgPath" type="button"
+                @click="pickImage(imgPath)"
+                class="w-full text-left px-3 py-1.5 text-xs rounded-lg hover:bg-blue-200 text-gray-700 font-mono truncate">
+                {{ imgPath }}
+              </button>
+              <p v-if="filteredImages.length === 0" class="text-xs text-gray-400 text-center py-4">Sin resultados para "{{ imagePicker.query }}"</p>
             </div>
           </div>
         </div>
@@ -877,6 +926,8 @@ createApp({
       modalStep: 'type',
       addMode: null,
       variantBaseName: '',
+      imageManifest: [],
+      imagePicker: { open: false, slot: null, type: 'normal', query: '' },
 
       /* orders */
       orders: ls('zv_orders', INIT_ORDERS),
@@ -916,9 +967,16 @@ createApp({
     if (!localStorage.getItem('zv_categories')) {
       localStorage.setItem('zv_categories', JSON.stringify(this.categories));
     }
+    this.loadImageManifest();
   },
 
   computed: {
+    filteredImages() {
+      const all = this.imageManifest;
+      const q = (this.imagePicker.query || '').toLowerCase().trim();
+      if (!q) return all;
+      return all.filter(f => f.toLowerCase().includes(q));
+    },
     productsInCategory() {
       return this.products.filter(p => p.category === this.productForm.category);
     },
@@ -1224,6 +1282,27 @@ createApp({
         Enviado:   'bg-amber-100 text-amber-700',
         Entregado: 'bg-green-100 text-green-700',
       }[s] || 'bg-gray-100 text-gray-600';
+    },
+
+    /* ─ Image manifest (rutas de archivo reales) ─ */
+    async loadImageManifest() {
+      try {
+        const res = await fetch('images-manifest.json?v=' + Date.now());
+        if (!res.ok) return;
+        const data = await res.json();
+        this.imageManifest = data.folders.flatMap(f => f.files);
+      } catch(e) {}
+    },
+    openImagePicker(slot, type) {
+      this.imagePicker = { open: true, slot, type: type || 'normal', query: '' };
+    },
+    pickImage(path) {
+      if (this.imagePicker.type === 'polarized') {
+        this.productForm.imagesPolarized.splice(this.imagePicker.slot, 1, path);
+      } else {
+        this.productForm.images.splice(this.imagePicker.slot, 1, path);
+      }
+      this.imagePicker = { open: false, slot: null, type: 'normal', query: '' };
     },
 
     /* ─ Image upload ─ */
