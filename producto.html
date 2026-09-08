@@ -206,9 +206,6 @@
                 </button>
             </div>
 
-            <!-- Descripción corta -->
-            <p id="pdDescription" style="display:none; font-size:0.85rem; color:#555; line-height:1.75; margin:0.6rem 0 1.1rem;"></p>
-
             <!-- Colores -->
             <div class="pd__section">
                 <p class="pd__section-label">20 Colores</p>
@@ -300,7 +297,7 @@
             <!-- Acordeón de detalles -->
             <div class="pd__accordion">
 
-                <div class="pd__acc-item">
+                <div class="pd__acc-item" id="pdAccDescItem">
                     <button class="pd__acc-btn" aria-expanded="false">
                         <span>Descripción del producto</span>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -308,7 +305,7 @@
                         </svg>
                     </button>
                     <div class="pd__acc-body">
-                        <p>El Wayfarer Clásico es el modelo de lentes de sol más icónico de todos los tiempos. Lanzado en 1956, revolucionó la industria con su diseño de acetato en forma trapezoidal. Usado por generaciones de íconos culturales, sigue siendo la elección de quienes valoran lo auténtico.</p>
+                        <p id="pdAccDescText"></p>
                     </div>
                 </div>
 
@@ -674,11 +671,12 @@
       document.title = p.name + ' — Ray-Ban | ZEVOR';
       document.querySelector('.pd__name').textContent = p.name;
 
-      /* Descripción */
-      var descEl = document.getElementById('pdDescription');
-      if (descEl) {
-        if (p.description) { descEl.textContent = p.description; descEl.style.display = ''; }
-        else { descEl.style.display = 'none'; }
+      /* Descripción en acordeón */
+      var descText = document.getElementById('pdAccDescText');
+      var descItem = document.getElementById('pdAccDescItem');
+      if (descText && descItem) {
+        if (p.description) { descText.textContent = p.description; descItem.style.display = ''; }
+        else { descItem.style.display = 'none'; }
       }
 
       /* Precio */
