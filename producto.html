@@ -206,6 +206,9 @@
                 </button>
             </div>
 
+            <!-- Descripción corta -->
+            <p id="pdDescription" style="display:none; font-size:0.85rem; color:#555; line-height:1.75; margin:0.6rem 0 1.1rem;"></p>
+
             <!-- Colores -->
             <div class="pd__section">
                 <p class="pd__section-label">20 Colores</p>
@@ -670,6 +673,13 @@
       /* Título de pestaña y heading */
       document.title = p.name + ' — Ray-Ban | ZEVOR';
       document.querySelector('.pd__name').textContent = p.name;
+
+      /* Descripción */
+      var descEl = document.getElementById('pdDescription');
+      if (descEl) {
+        if (p.description) { descEl.textContent = p.description; descEl.style.display = ''; }
+        else { descEl.style.display = 'none'; }
+      }
 
       /* Precio */
       if (p.price) {
