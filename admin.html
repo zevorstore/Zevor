@@ -1120,7 +1120,7 @@ createApp({
     /* ─ Exportar productos.json para publicar en GitHub Pages ─ */
     async limpiarImagenes() {
       this.showToast('ok', 'Comprimiendo imágenes, esperá...');
-      const maxW = 400, maxH = 400, q = 0.55;
+      const maxW = 800, maxH = 800, q = 0.82;
       const recompress = (src) => {
         if (!src || !src.startsWith('data:')) return Promise.resolve(src);
         return new Promise(resolve => {
@@ -1231,7 +1231,7 @@ createApp({
       const file = event.target.files[0];
       if (!file) return;
       this.uploadingImage = true;
-      compressImage(file, 400, 400, 0.55).then(dataUrl => {
+      compressImage(file, 800, 800, 0.85).then(dataUrl => {
         this.productForm.images.splice(idx, 1, dataUrl);
         this.uploadingImage = false;
         event.target.value = '';
@@ -1244,7 +1244,7 @@ createApp({
       const file = event.target.files[0];
       if (!file) return;
       this.uploadingImage = true;
-      compressImage(file, 400, 400, 0.55).then(dataUrl => {
+      compressImage(file, 800, 800, 0.85).then(dataUrl => {
         this.productForm.imagesPolarized.splice(idx, 1, dataUrl);
         this.uploadingImage = false;
         event.target.value = '';
