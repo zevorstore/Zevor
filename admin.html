@@ -623,7 +623,9 @@
               <!-- Preview -->
               <div class="aspect-square bg-gray-100 rounded-xl overflow-hidden relative flex items-center justify-center mb-1.5">
                 <img v-if="productForm.images[idx]" :src="productForm.images[idx]"
-                  class="w-full h-full object-contain p-1" />
+                  class="w-full h-full object-contain p-1"
+                  @error="e => { e.target.style.display='none'; e.target.nextElementSibling.hidden=false }" />
+                <p v-if="productForm.images[idx]" hidden class="text-gray-400 text-xs text-center px-1 leading-tight select-none">📁 Foto {{ idx + 1 }}<br><span class="text-gray-300">OK en el sitio</span></p>
                 <p v-else class="text-gray-300 text-xs text-center px-1 leading-tight select-none">
                   {{ idx === 0 ? 'Principal' : 'Foto ' + (idx + 1) }}
                 </p>
@@ -684,8 +686,10 @@
             <div v-for="idx in [0,1,2,3]" :key="'pol-'+idx">
               <div class="aspect-square bg-white rounded-xl overflow-hidden relative flex items-center justify-center mb-1.5 border border-blue-100">
                 <img v-if="productForm.imagesPolarized[idx]" :src="productForm.imagesPolarized[idx]"
-                  class="w-full h-full object-contain p-1" />
-                <p v-else class="text-blue-200 text-xs text-center px-1 leading-tight select-none">
+                  class="w-full h-full object-contain p-1"
+                  @error="e => { e.target.style.display='none'; e.target.nextElementSibling.hidden=false }" />
+                <p v-if="productForm.imagesPolarized[idx]" hidden class="text-blue-400 text-xs text-center px-1 leading-tight select-none">📁 Foto {{ idx + 1 }}<br><span class="text-blue-300">OK en el sitio</span></p>
+                <p v-else class="text-blue-200 text-xs text center px-1 leading-tight select-none">
                   {{ idx === 0 ? 'Principal' : 'Foto ' + (idx + 1) }}
                 </p>
                 <button v-if="productForm.imagesPolarized[idx]" type="button" @click="removePolarizedImage(idx)"
