@@ -1343,9 +1343,10 @@ createApp({
   },
 
   mounted() {
-    /* Guarda los datos iniciales en localStorage si es la primera vez */
+    /* Siempre cargar desde productos.json (fuente de verdad) cuando sea posible */
+    this.syncFromProductosJSON();
+    /* Fallback: si localStorage no tiene datos, inicializar */
     if (!localStorage.getItem('zv_products')) {
-      /* Asegurar que los productos iniciales tengan el campo images */
       this.products = this.products.map(p => ({
         ...p,
         images: Array.isArray(p.images) ? p.images : [p.image||'','','',''],
@@ -1686,6 +1687,24 @@ createApp({
         Enviado:   'bg-amber-100 text-amber-700',
         Entregado: 'bg-green-100 text-green-700',
       }[s] || 'bg-gray-100 text-gray-600';
+    },
+
+    /* ─ Sincronizar desde productos.json (fuente de verdad) ─ */
+    async syncFromProductosJSON() {
+      try {
+        const res = await fetch('productos.json?v=' + Date.now());
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!data.products || data.products.length === 0) return;
+        this.products = data.products.map(p => ({
+          ...p,
+          images: Array.isArray(p.images) ? p.images : [p.image||'','','',''],
+          imagesPolarized: Array.isArray(p.imagesPolarized) ? p.imagesPolarized : ['','','',''],
+        }));
+        if (data.categories && data.categories.length) this.categories = data.categories;
+        localStorage.setItem('zv_products', JSON.stringify(this.products));
+        localStorage.setItem('zv_categories', JSON.stringify(this.categories));
+      } catch(e) { /* archivo local: usa localStorage como fallback */ }
     },
 
     /* ─ Image manifest (rutas de archivo reales) ─ */
