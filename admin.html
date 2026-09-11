@@ -853,22 +853,22 @@ const IMAGE_MANIFEST = [
   'Bill/Bill azul transparente, azul 2.jpg',
   'Bill/Bill azul transparente, azul 3.jpg',
   'Bill/Bill azul transparente, azul 4.jpg',
-  'Celine/Celine dorado, Gris Oscuro 1.avif',
-  'Celine/Celine dorado, Gris Oscuro 2.avif',
-  'Celine/Celine dorado, Gris Oscuro 3.avif',
-  'Celine/Celine dorado, Gris Oscuro 4.avif',
-  'Celine/Celine Dorado, Marrón 1.avif',
-  'Celine/Celine Dorado, Marrón 2.avif',
-  'Celine/Celine Dorado, Marrón 3.avif',
-  'Celine/Celine Dorado, Marrón 4.avif',
-  'Celine/celine dorado, verde 1.avif',
-  'Celine/celine dorado, verde 2.avif',
-  'Celine/celine dorado, verde 3.avif',
-  'Celine/celine dorado, verde 4.avif',
-  'Celine/Celine plateado, Gris Oscuro 1.avif',
-  'Celine/Celine plateado, Gris Oscuro 2.avif',
-  'Celine/Celine plateado, Gris Oscuro 3.avif',
-  'Celine/Celine plateado, Gris Oscuro 4.avif',
+  'Oval Metal/oval dorado, gris 1.avif',
+  'Oval Metal/oval dorado, gris 2.avif',
+  'Oval Metal/oval dorado, gris 3.avif',
+  'Oval Metal/oval dorado, gris 4.avif',
+  'Oval Metal/oval dorado, marron 1.avif',
+  'Oval Metal/oval dorado, marron 2.avif',
+  'Oval Metal/oval dorado, marron 3.avif',
+  'Oval Metal/oval dorado, marron 4.avif',
+  'Oval Metal/oval dorado, verde 1.avif',
+  'Oval Metal/oval dorado, verde 2.avif',
+  'Oval Metal/oval dorado, verde 3.avif',
+  'Oval Metal/oval dorado, verde 4.avif',
+  'Oval Metal/oval gris, gris 1.avif',
+  'Oval Metal/oval gris, gris 2.avif',
+  'Oval Metal/oval gris, gris 3.avif',
+  'Oval Metal/oval gris, gris 4.avif',
   'Clubmaster/CLUBMASTER CLASSIC carey, verde 1.avif',
   'Clubmaster/CLUBMASTER CLASSIC carey, verde 2.avif',
   'Clubmaster/CLUBMASTER CLASSIC carey, verde 3.avif',
@@ -1721,7 +1721,7 @@ createApp({
     previewSrc(path) {
       if (!path) return '';
       if (path.startsWith('data:') || path.startsWith('http')) return path;
-      return 'https://zevorstore.github.io/' + path.split('/').map(s => encodeURIComponent(s)).join('/');
+      return 'https://zevorstore.github.io/Zevor/' + path.split('/').map(s => encodeURIComponent(s)).join('/');
     },
 
     /* ─ Image upload ─ */
