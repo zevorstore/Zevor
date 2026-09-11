@@ -1721,7 +1721,7 @@ createApp({
     previewSrc(path) {
       if (!path) return '';
       if (path.startsWith('data:') || path.startsWith('http')) return path;
-      return 'https://zevorstore.github.io/Zevor/' + path.split('/').map(s => encodeURIComponent(s)).join('/');
+      return 'https://zevorstore.github.io/' + path.split('/').map(s => encodeURIComponent(s)).join('/');
     },
 
     /* ─ Image upload ─ */
