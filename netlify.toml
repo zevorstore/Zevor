@@ -11,7 +11,7 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy      = "strict-origin-when-cross-origin"
     Permissions-Policy   = "camera=(), microphone=(), geolocation=()"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://sdk.mercadopago.com https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.mercadopago.com https://www.google-analytics.com https://analytics.google.com; frame-src https://www.mercadopago.com.ar https://www.mercadopago.com; object-src 'none';"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://sdk.mercadopago.com https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.mercadopago.com https://www.google-analytics.com https://analytics.google.com https://www.facebook.com; frame-src https://www.mercadopago.com.ar https://www.mercadopago.com; object-src 'none';"
 
 # Assets estáticos — cache de 1 año
 [[headers]]

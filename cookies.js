@@ -12,6 +12,9 @@
         ad_personalization: granted ? 'granted' : 'denied'
       });
     }
+    if (typeof fbq === 'function') {
+      fbq('consent', granted ? 'grant' : 'revoke');
+    }
   }
 
   function hideBanner() {
