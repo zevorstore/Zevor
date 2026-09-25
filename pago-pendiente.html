@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<!-- Google tag (gtag.js) — Consent Mode v2 -->
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('consent', 'default', {
+    analytics_storage: 'denied',
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
+    wait_for_update: 500
+  });
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-VMDDK60TPX"></script>
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('consent', 'revoke');
+fbq('init', '1992597204786866');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1992597204786866&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+<script>
+  gtag('js', new Date());
+  gtag('config', 'G-VMDDK60TPX');
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pago Pendiente — ZEVOR</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --black: #0d0d0d; --white: #fafaf8; --gray-light: #e8e8e5;
+            --gray-mid: #888884; --amber: #f59e0b;
+            --font-serif: 'Playfair Display', Georgia, serif;
+            --font-sans: 'Montserrat', system-ui, sans-serif;
+        }
+        body { font-family: var(--font-sans); background: var(--white); color: var(--black); min-height: 100vh; display: flex; flex-direction: column; }
+        nav { background: var(--black); height: 56px; display: flex; align-items: center; padding: 0 1.5rem; }
+        nav a { color: #fff; text-decoration: none; font-size: 1.1rem; font-weight: 700; letter-spacing: 0.12em; font-family: var(--font-serif); }
+        main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 3rem 1.25rem; }
+        .card { background: #fff; border: 1px solid var(--gray-light); border-radius: 16px; padding: 2.5rem 2rem; max-width: 480px; width: 100%; text-align: center; box-shadow: 0 4px 24px rgba(0,0,0,.06); }
+        .icon-wrap { width: 64px; height: 64px; border-radius: 50%; background: #fff8e1; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; }
+        .title { font-family: var(--font-serif); font-size: 1.6rem; margin-bottom: .75rem; }
+        .subtitle { color: var(--gray-mid); font-size: .9rem; line-height: 1.7; margin-bottom: 1.5rem; }
+        .order-id { background: #fff8e1; border: 1px solid #fcd34d; border-radius: 10px; padding: .9rem 1.2rem; font-size: .85rem; color: #92400e; margin-bottom: 1.75rem; }
+        .order-id strong { display: block; font-size: 1rem; margin-top: .25rem; color: var(--black); }
+        .steps { text-align: left; background: var(--white); border: 1px solid var(--gray-light); border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 1.75rem; }
+        .steps p { font-size: .82rem; color: #555; line-height: 1.6; }
+        .steps p + p { margin-top: .5rem; }
+        .step-num { display: inline-block; width: 20px; height: 20px; background: var(--amber); border-radius: 50%; color: #fff; font-size: .7rem; font-weight: 700; text-align: center; line-height: 20px; margin-right: .4rem; }
+        .btn { display: inline-block; padding: .75rem 1.75rem; border-radius: 50px; font-size: .85rem; font-weight: 500; text-decoration: none; margin: .3rem; }
+        .btn--dark { background: var(--black); color: #fff; }
+        .btn--outline { border: 1.5px solid var(--gray-light); color: var(--black); }
+    </style>
+</head>
+<body>
+<nav><a href="index.html">ZEVOR</a></nav>
+<main>
+    <div class="card">
+        <div class="icon-wrap">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2.5">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+        </div>
+        <h1 class="title">Pago pendiente</h1>
+        <p class="subtitle">Tu pedido fue registrado. Para completar la compra tenés que abonar en un punto de pago.</p>
+        <div class="order-id" id="orderBox" style="display:none">
+            N° de orden
+            <strong id="orderId">—</strong>
+        </div>
+        <div class="steps">
+            <p><span class="step-num">1</span>Abrí el email que te mandó Mercado Pago con el cupón de pago.</p>
+            <p><span class="step-num">2</span>Llevá el código a Rapipago, Pago Fácil, Provincia NET u otra red habilitada.</p>
+            <p><span class="step-num">3</span>Una vez abonado, la confirmación llega en minutos. Te avisamos por email.</p>
+        </div>
+        <a href="catalogo.html" class="btn btn--dark">Ver más productos</a>
+        <a href="index.html" class="btn btn--outline">Inicio</a>
+    </div>
+</main>
+<script>
+    const params  = new URLSearchParams(window.location.search);
+    const orderId = params.get('order');
+    if (orderId) {
+        document.getElementById('orderId').textContent  = orderId;
+        document.getElementById('orderBox').style.display = 'block';
+    }
+</script>
+<script src="cookies.js"></script>
+</body>
+</html>
