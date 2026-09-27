@@ -332,7 +332,7 @@ const SERVER_URL = 'https://zevor-server.onrender.com';
 const IS_SANDBOX = true;                    /* true = modo prueba, false = producción */
 
 /* ── Cargar carrito desde localStorage ── */
-const cart = JSON.parse(localStorage.getItem('zevorCart') || '[]');
+const cart = JSON.parse(localStorage.getItem('zv_cart') || '[]');
 const main = document.getElementById('checkoutMain');
 
 function fmt(n) { return '$' + Number(n).toLocaleString('es-AR'); }

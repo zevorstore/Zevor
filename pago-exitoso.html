@@ -116,7 +116,7 @@ async function verificarOrden() {
 
 function mostrarExito(order) {
     /* Limpiar carrito */
-    localStorage.removeItem('zevorCart');
+    localStorage.removeItem('zv_cart');
 
     const itemsHTML = (order.items || []).map(i =>
         `<div class="order-row"><span>${i.title} × ${i.quantity}</span><span>${fmt(i.unit_price * i.quantity)}</span></div>`
