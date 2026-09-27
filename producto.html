@@ -320,13 +320,12 @@ src="https://www.facebook.com/tr?id=1992597204786866&ev=PageView&noscript=1"
                 <span class="pd__price-note">Precio final con IVA incluido</span>
             </div>
 
-            <!-- CTA principal: Agregar al carrito -->
-            <button onclick="addToCart()" class="btn btn--dark pd__cta" id="ctaCart" style="width:100%;cursor:pointer;background:#0d0d0d;display:flex;align-items:center;justify-content:center;gap:0.5rem;margin-bottom:0.6rem;">
+            <!-- CTA principal: Comprar ahora -->
+            <button onclick="comprarAhora()" class="btn btn--dark pd__cta" id="ctaCart" style="width:100%;cursor:pointer;background:#0d0d0d;display:flex;align-items:center;justify-content:center;gap:0.5rem;margin-bottom:0.6rem;">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
-                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                    <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
                 </svg>
-                Agregar al carrito
+                Comprar ahora
             </button>
 
             <!-- CTA secundario: WhatsApp -->
@@ -965,6 +964,25 @@ src="https://www.facebook.com/tr?id=1992597204786866&ev=PageView&noscript=1"
             ZV_CART.addItem(item);
         }
         window.location.href = 'carrito.html';
+    }
+
+    function comprarAhora() {
+        const ap      = window.__activeProduct;
+        const marco   = ap ? (ap.frameColor || colorData[currentFrameIdx].marco) : colorData[currentFrameIdx].marco;
+        const lentes  = ap ? (ap.lensColor  || colorData[currentFrameIdx].lensOptions[currentLensIdx].color) : colorData[currentFrameIdx].lensOptions[currentLensIdx].color;
+        const variant = [marco, lentes].filter(Boolean).join(' / ');
+        const img     = images[0] || '';
+        const item = {
+            id:      ap ? String(ap.id) : ('prod_' + Date.now()),
+            name:    ap ? ap.name : 'Wayfarer Clásico Original',
+            price:   ap ? (ap.price || 0) : 0,
+            img:     img,
+            variant: variant
+        };
+        if (window.ZV_CART) {
+            ZV_CART.addItem(item);
+        }
+        window.location.href = 'checkout.html';
     }
 </script>
 <script src="cart.js"></script>
