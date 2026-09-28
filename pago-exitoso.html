@@ -97,26 +97,29 @@ const content    = document.getElementById('content');
 function fmt(n) { return '$' + Number(n).toLocaleString('es-AR'); }
 
 async function verificarOrden() {
-    if (!orderId) { mostrarError(); return; }
+    if (!orderId) { mostrarPendiente(); return; }
+    /* Limpiar carrito apenas llegamos — el pago se procesó en MP */
+    localStorage.removeItem('zv_cart');
     try {
-        /* Esperar hasta 10 seg a que el webhook confirme el pago */
-        for (let i = 0; i < 5; i++) {
+        /* Esperar hasta 20 seg a que el webhook confirme el pago */
+        for (let i = 0; i < 10; i++) {
             const res  = await fetch(`${SERVER_URL}/api/order/${orderId}`);
+            if (res.status === 404) { await sleep(2000); continue; }
             const data = await res.json();
-            if (data.status === 'paid') { mostrarExito(data); return; }
+            if (data.status === 'paid')   { mostrarExito(data); return; }
             if (data.status === 'pending') { await sleep(2000); continue; }
-            mostrarError(); return;
+            /* amount_mismatch u otro: mostrar pendiente igualmente */
+            mostrarPendiente(); return;
         }
-        /* Pago pendiente (puede demorar procesamiento bancario) */
+        /* Después de 20 seg sin confirmación → pendiente */
         mostrarPendiente();
     } catch {
-        mostrarError();
+        /* Error de red → pendiente (el pago puede haber sido correcto) */
+        mostrarPendiente();
     }
 }
 
 function mostrarExito(order) {
-    /* Limpiar carrito */
-    localStorage.removeItem('zv_cart');
 
     const itemsHTML = (order.items || []).map(i =>
         `<div class="order-row"><span>${i.title} × ${i.quantity}</span><span>${fmt(i.unit_price * i.quantity)}</span></div>`

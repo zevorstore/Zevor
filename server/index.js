@@ -71,15 +71,16 @@ app.use(helmet({
 /* CORS: solo el sitio propio puede llamar a la API */
 app.use(cors({
   origin: function (origin, callback) {
-    // Permitir requests sin origin (webhooks, Postman)
     if (!origin) return callback(null, true);
-    // Permitir cualquier subdominio de github.io y localhost
     if (origin.endsWith('.github.io') || origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1')) {
       return callback(null, true);
     }
     callback(new Error('CORS: origen no permitido'));
   },
-  methods: ['GET', 'POST'],
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'x-api-key'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
 }));
 
 /* Rate limiting general: 200 requests por 15 minutos por IP */
