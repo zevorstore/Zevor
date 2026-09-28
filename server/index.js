@@ -236,14 +236,15 @@ app.post('/api/webhook', async (req, res) => {
       const [tsPart, v1Part] = signature.split(',');
       const ts      = tsPart.split('=')[1];
       const v1      = v1Part.split('=')[1];
-      const queryId = req.query.id || '';
+      /* MP puede enviar el id como ?id=X o como ?data.id=X según la versión */
+      const queryId = req.query.id || req.query['data.id'] || '';
       const manifest = `id:${queryId};request-id:${requestId};ts:${ts};`;
       const expected = crypto
         .createHmac('sha256', process.env.MP_WEBHOOK_SECRET)
         .update(manifest)
         .digest('hex');
       if (expected !== v1) {
-        console.warn('Webhook rechazado: firma inválida');
+        console.warn(`Webhook rechazado: firma inválida. queryId=${queryId} manifest=${manifest}`);
         return res.status(401).json({ error: 'Firma inválida.' });
       }
     } catch (e) {
@@ -252,9 +253,10 @@ app.post('/api/webhook', async (req, res) => {
     }
   }
 
-  const body = typeof req.body === 'string'
-    ? JSON.parse(req.body)
-    : req.body;
+  /* express.raw() entrega un Buffer; JSON.parse lo acepta directamente */
+  const body = Buffer.isBuffer(req.body)
+    ? JSON.parse(req.body.toString('utf8'))
+    : (typeof req.body === 'string' ? JSON.parse(req.body) : req.body);
 
   if (body.type !== 'payment') {
     return res.status(200).json({ received: true });
