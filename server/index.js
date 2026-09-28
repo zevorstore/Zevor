@@ -1,21 +1,30 @@
 console.log('[startup] Iniciando ZEVOR Server...');
 require('dotenv').config();
-const express    = require('express');
-const cors       = require('cors');
-const helmet     = require('helmet');
-const rateLimit  = require('express-rate-limit');
-const crypto     = require('crypto');
-const fs         = require('fs');
-const path       = require('path');
-const { z }      = require('zod');
+const express     = require('express');
+const cors        = require('cors');
+const helmet      = require('helmet');
+const rateLimit   = require('express-rate-limit');
+const crypto      = require('crypto');
+const fs          = require('fs');
+const path        = require('path');
+const { z }       = require('zod');
+const { MongoClient } = require('mongodb');
 const { MercadoPagoConfig, Preference, Payment } = require('mercadopago');
 
 const app  = express();
 const PORT = process.env.PORT || 3001;
 
-/* ── Archivos de persistencia ── */
-const ORDERS_FILE = path.join(__dirname, 'orders.json');
-const STOCK_FILE  = path.join(__dirname, 'stock.json');
+/* ── MongoDB ── */
+let db;
+async function connectDB() {
+  const client = new MongoClient(process.env.MONGODB_URI);
+  await client.connect();
+  db = client.db('zevor');
+  console.log('✓ MongoDB conectado');
+}
+
+/* ── Stock (archivo local) ── */
+const STOCK_FILE = path.join(__dirname, 'stock.json');
 
 function readJSON(file, fallback) {
   try { return JSON.parse(fs.readFileSync(file, 'utf8')); }
@@ -52,7 +61,6 @@ const mpClient = new MercadoPagoConfig({
    MIDDLEWARE
    ══════════════════════════════════════════════════════════════ */
 
-/* Cabeceras de seguridad HTTP */
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -66,10 +74,9 @@ app.use(helmet({
       objectSrc:   ["'none'"],
     },
   },
-  crossOriginEmbedderPolicy: false, // Necesario para el SDK de Mercado Pago
+  crossOriginEmbedderPolicy: false,
 }));
 
-/* CORS: solo el sitio propio puede llamar a la API */
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
@@ -82,33 +89,23 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'x-api-key'],
 }));
 
-/* Rate limiting general: 200 requests por 15 minutos por IP */
 const limiterGeneral = rateLimit({
-  windowMs:         15 * 60 * 1000,
-  max:              200,
-  standardHeaders:  true,
-  legacyHeaders:    false,
-  message:          { error: 'Demasiadas solicitudes. Intentá en unos minutos.' },
+  windowMs: 15 * 60 * 1000, max: 200,
+  standardHeaders: true, legacyHeaders: false,
+  message: { error: 'Demasiadas solicitudes. Intentá en unos minutos.' },
 });
 app.use(limiterGeneral);
 
-/* Rate limiting estricto para la creación de pagos: 10 por 15 minutos por IP */
 const limiterPagos = rateLimit({
-  windowMs:        15 * 60 * 1000,
-  max:             10,
-  standardHeaders: true,
-  legacyHeaders:   false,
-  message:         { error: 'Demasiados intentos de pago. Esperá 15 minutos.' },
+  windowMs: 15 * 60 * 1000, max: 10,
+  standardHeaders: true, legacyHeaders: false,
+  message: { error: 'Demasiados intentos de pago. Esperá 15 minutos.' },
 });
 
-/* El webhook necesita el body RAW para validar firma */
 app.use('/api/webhook', express.raw({ type: 'application/json' }));
-app.use(express.json({ limit: '10kb' })); // Límite de tamaño para evitar payloads gigantes
-
-/* Servir el sitio estático */
+app.use(express.json({ limit: '10kb' }));
 app.use(express.static(path.join(__dirname, '..')));
 
-/* ── Middleware de autenticación para rutas de admin ── */
 function requireApiKey(req, res, next) {
   const key = req.headers['x-api-key'] || req.query.apiKey;
   if (!process.env.ADMIN_API_KEY || key !== process.env.ADMIN_API_KEY) {
@@ -136,17 +133,16 @@ const shippingSchema = z.object({
 }).optional();
 
 const preferenceSchema = z.object({
-  items:          z.array(itemSchema).min(1).max(20),
-  buyerEmail:     z.string().email().optional().or(z.literal('')),
-  orderId:        z.string().max(64).optional(),
-  buyerShipping:  shippingSchema,
+  items:         z.array(itemSchema).min(1).max(20),
+  buyerEmail:    z.string().email().optional().or(z.literal('')),
+  orderId:       z.string().max(64).optional(),
+  buyerShipping: shippingSchema,
 });
 
 /* ══════════════════════════════════════════════════════════════
    ENDPOINT 1: Crear Preferencia de Pago
    ══════════════════════════════════════════════════════════════ */
 app.post('/api/create-preference', limiterPagos, async (req, res) => {
-  /* ─── Validación de inputs con Zod ─── */
   const parsed = preferenceSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({
@@ -158,7 +154,6 @@ app.post('/api/create-preference', limiterPagos, async (req, res) => {
   const { items, buyerEmail, orderId, buyerShipping } = parsed.data;
 
   try {
-    /* ─── Verificar stock y precio SERVER-SIDE ─── */
     const stock = readJSON(STOCK_FILE, {});
     const itemsValidados = [];
     let totalValidado = 0;
@@ -183,23 +178,19 @@ app.post('/api/create-preference', limiterPagos, async (req, res) => {
       totalValidado += producto.price * item.qty;
     }
 
-    /* ─── Crear la orden pendiente ─── */
     const orderRef = orderId || `ZV-${Date.now()}`;
-    const orders   = readJSON(ORDERS_FILE, []);
-    orders.push({
-      id:           orderRef,
-      status:       'pending',
-      items:        itemsValidados,
-      total:        totalValidado,
-      buyerEmail:   buyerEmail || '',
+    await db.collection('orders').insertOne({
+      id:            orderRef,
+      status:        'pending',
+      items:         itemsValidados,
+      total:         totalValidado,
+      buyerEmail:    buyerEmail || '',
       buyerShipping: buyerShipping || {},
-      createdAt:    new Date().toISOString(),
-      paidAt:       null,
-      mpPaymentId:  null,
+      createdAt:     new Date().toISOString(),
+      paidAt:        null,
+      mpPaymentId:   null,
     });
-    writeJSON(ORDERS_FILE, orders);
 
-    /* ─── Crear Preferencia en Mercado Pago ─── */
     const preference = new Preference(mpClient);
     const response   = await preference.create({
       body: {
@@ -237,7 +228,6 @@ app.post('/api/create-preference', limiterPagos, async (req, res) => {
    ENDPOINT 2: Webhook de Mercado Pago
    ══════════════════════════════════════════════════════════════ */
 app.post('/api/webhook', async (req, res) => {
-  /* ─── Validar firma del webhook ─── */
   const signature = req.headers['x-signature'];
   const requestId = req.headers['x-request-id'];
 
@@ -281,36 +271,35 @@ app.post('/api/webhook', async (req, res) => {
       return res.status(200).json({ received: true, status });
     }
 
-    const orders   = readJSON(ORDERS_FILE, []);
-    const orderIdx = orders.findIndex(o => o.id === orderRef);
+    const order = await db.collection('orders').findOne({ id: orderRef });
 
-    if (orderIdx === -1) {
+    if (!order) {
       console.error(`Orden ${orderRef} no encontrada`);
       return res.status(200).json({ received: true });
     }
 
-    const order = orders[orderIdx];
-
-    /* Idempotencia */
     if (order.status === 'paid') {
       return res.status(200).json({ received: true, already: 'paid' });
     }
 
-    /* Validar monto */
     if (Math.abs(transaction_amount - order.total) > 1) {
       console.error(`Monto incorrecto: pagó ${transaction_amount}, esperaba ${order.total}`);
-      orders[orderIdx].status = 'amount_mismatch';
-      writeJSON(ORDERS_FILE, orders);
+      await db.collection('orders').updateOne(
+        { id: orderRef },
+        { $set: { status: 'amount_mismatch' } }
+      );
       return res.status(200).json({ received: true, error: 'monto_incorrecto' });
     }
 
-    /* Marcar como pagada */
-    orders[orderIdx].status      = 'paid';
-    orders[orderIdx].paidAt      = new Date().toISOString();
-    orders[orderIdx].mpPaymentId = String(payment.id);
-    writeJSON(ORDERS_FILE, orders);
+    await db.collection('orders').updateOne(
+      { id: orderRef },
+      { $set: {
+        status:      'paid',
+        paidAt:      new Date().toISOString(),
+        mpPaymentId: String(payment.id),
+      }}
+    );
 
-    /* Descontar stock */
     const stock = readJSON(STOCK_FILE, {});
     for (const item of order.items) {
       const pid = Number(item.id);
@@ -330,44 +319,49 @@ app.post('/api/webhook', async (req, res) => {
 });
 
 /* ══════════════════════════════════════════════════════════════
-   ENDPOINT 3: Estado de una orden (páginas de retorno)
+   ENDPOINT 3: Estado de una orden
    ══════════════════════════════════════════════════════════════ */
-app.get('/api/order/:id', (req, res) => {
-  /* Validar que el ID solo tenga caracteres seguros */
+app.get('/api/order/:id', async (req, res) => {
   if (!/^[A-Za-z0-9_-]{1,64}$/.test(req.params.id)) {
     return res.status(400).json({ error: 'ID de orden inválido.' });
   }
-  const orders = readJSON(ORDERS_FILE, []);
-  const order  = orders.find(o => o.id === req.params.id);
+  const order = await db.collection('orders').findOne({ id: req.params.id });
   if (!order) return res.status(404).json({ error: 'Orden no encontrada.' });
   res.json({
-    id:           order.id,
-    status:       order.status,
-    total:        order.total,
-    items:        order.items,
-    buyerEmail:   order.buyerEmail,
+    id:            order.id,
+    status:        order.status,
+    total:         order.total,
+    items:         order.items,
+    buyerEmail:    order.buyerEmail,
     buyerShipping: order.buyerShipping || {},
-    createdAt:    order.createdAt,
-    paidAt:       order.paidAt,
+    createdAt:     order.createdAt,
+    paidAt:        order.paidAt,
   });
 });
 
 /* ══════════════════════════════════════════════════════════════
    ENDPOINT 4: Listar órdenes — protegido con API Key
    ══════════════════════════════════════════════════════════════ */
-app.get('/api/orders', requireApiKey, (req, res) => {
-  const orders = readJSON(ORDERS_FILE, []);
-  res.json(orders.slice().reverse());
+app.get('/api/orders', requireApiKey, async (req, res) => {
+  const orders = await db.collection('orders').find().sort({ createdAt: -1 }).toArray();
+  res.json(orders);
 });
 
-/* ── Inicializar archivos si no existen ── */
-if (!fs.existsSync(ORDERS_FILE)) writeJSON(ORDERS_FILE, []);
+/* ── Inicializar stock si no existe ── */
 if (!fs.existsSync(STOCK_FILE)) {
   writeJSON(STOCK_FILE, { 1:12, 2:3, 3:0, 4:7, 5:4, 6:1, 7:0, 8:8, 9:2 });
 }
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`\n🛍  ZEVOR Server corriendo en http://0.0.0.0:${PORT}`);
-  console.log(`   Modo: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`   Webhooks en: /api/webhook\n`);
-});
+/* ── Arrancar servidor una vez conectado a MongoDB ── */
+connectDB()
+  .then(() => {
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`\n🛍  ZEVOR Server corriendo en http://0.0.0.0:${PORT}`);
+      console.log(`   Modo: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`   Webhooks en: /api/webhook\n`);
+    });
+  })
+  .catch(err => {
+    console.error('Error conectando a MongoDB:', err);
+    process.exit(1);
+  });
