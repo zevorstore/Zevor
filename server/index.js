@@ -78,13 +78,7 @@ app.use(helmet({
 }));
 
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-    if (origin.endsWith('.github.io') || origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1')) {
-      return callback(null, true);
-    }
-    callback(new Error('CORS: origen no permitido'));
-  },
+  origin: true,
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type', 'x-api-key'],
 }));
