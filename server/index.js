@@ -1,4 +1,3 @@
-console.log('[startup] Iniciando ZEVOR Server...');
 require('dotenv').config();
 const express     = require('express');
 const cors        = require('cors');
@@ -17,9 +16,10 @@ const PORT = process.env.PORT || 3001;
 /* ── MongoDB ── */
 let db;
 async function connectDB() {
-  const client = new MongoClient(process.env.MONGODB_URI);
+  const client = new MongoClient(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 10000 });
   await client.connect();
   db = client.db('zevor');
+  await db.collection('orders').createIndex({ id: 1 }, { unique: true, sparse: true });
   console.log('✓ MongoDB conectado');
 }
 
@@ -238,7 +238,7 @@ app.post('/api/webhook', async (req, res) => {
         .update(manifest)
         .digest('hex');
       if (expected !== v1) {
-        console.warn(`Webhook rechazado: firma inválida. queryId=${queryId} manifest=${manifest}`);
+        console.warn('Webhook rechazado: firma inválida');
         return res.status(401).json({ error: 'Firma inválida.' });
       }
     } catch (e) {
