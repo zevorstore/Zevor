@@ -24,18 +24,22 @@ function writeJSON(file, data) {
   fs.writeFileSync(file, JSON.stringify(data, null, 2));
 }
 
-/* ── Catálogo oficial del servidor (fuente de verdad de precios) ── */
-const CATALOGO = {
-  1: { name: 'Wayfarer Clásico',                    price: 45000, category: 'Wayfarer'   },
-  2: { name: 'Wayfarer Clásico — Negro Mate',        price: 45000, category: 'Wayfarer'   },
-  3: { name: 'Wayfarer Clásico — Carey',             price: 48000, category: 'Wayfarer'   },
-  4: { name: 'Wayfarer Clásico — Lighting Carey',    price: 48000, category: 'Wayfarer'   },
-  5: { name: 'Wayfarer Clásico — Azul Transparente', price: 46000, category: 'Wayfarer'   },
-  6: { name: 'Wayfarer Clásico — Violeta Trans.',    price: 46000, category: 'Wayfarer'   },
-  7: { name: 'Wayfarer Clásico — Verde Translúcido', price: 46000, category: 'Wayfarer'   },
-  8: { name: 'Aviator Classic',                      price: 52000, category: 'Aviator'    },
-  9: { name: 'Clubmaster Classic',                   price: 49000, category: 'Clubmaster' },
-};
+/* ── Catálogo: cargado desde productos.json (fuente de verdad de precios) ── */
+function buildCatalogo() {
+  try {
+    const raw  = fs.readFileSync(path.join(__dirname, '..', 'productos.json'), 'utf8');
+    const data = JSON.parse(raw);
+    const cat  = {};
+    for (const p of data.products) {
+      cat[String(p.id)] = { name: p.name, price: p.price, category: p.category || 'General' };
+    }
+    return cat;
+  } catch (e) {
+    console.error('No se pudo cargar productos.json:', e.message);
+    return {};
+  }
+}
+const CATALOGO = buildCatalogo();
 
 /* ── Mercado Pago SDK ── */
 const mpClient = new MercadoPagoConfig({
