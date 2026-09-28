@@ -362,8 +362,14 @@
                     <div v-else class="text-xs text-gray-300 mt-0.5">Manual</div>
                   </td>
                   <td class="px-5 py-4">
-                    <div class="font-medium text-gray-900 text-sm">{{ o.customer }}</div>
-                    <div v-if="o.paidAt" class="text-xs text-gray-400 mt-0.5">Pagado {{ o.paidAt.slice(0,10) }}</div>
+                    <div class="font-medium text-gray-900 text-sm">
+                      {{ o.shipping && (o.shipping.name || o.shipping.last) ? (o.shipping.name + ' ' + o.shipping.last).trim() : o.customer }}
+                    </div>
+                    <div class="text-xs text-gray-400 mt-0.5">{{ o.customer }}</div>
+                    <div v-if="o.shipping && o.shipping.address" class="text-xs text-gray-400 mt-0.5">
+                      {{ o.shipping.address }}, {{ o.shipping.city }} {{ o.shipping.province ? '(' + o.shipping.province + ')' : '' }} {{ o.shipping.cp }}
+                    </div>
+                    <div v-if="o.paidAt" class="text-xs text-green-500 mt-0.5">✓ Pagado {{ o.paidAt.slice(0,10) }}</div>
                   </td>
                   <td class="px-5 py-4 text-gray-500 text-sm hidden sm:table-cell">
                     <div v-if="o.items && o.items.length" class="space-y-0.5">
@@ -1693,16 +1699,17 @@ createApp({
         const serverOrders = await res.json();
         const statusMap = { pending: 'Pendiente', paid: 'Pagado', amount_mismatch: 'Error de monto' };
         const mapped = serverOrders.map(o => ({
-          id:          o.id,
-          customer:    o.buyerEmail || 'Sin email',
-          product:     (o.items || []).map(i => i.title + (i.quantity > 1 ? ' × ' + i.quantity : '')).join(', ') || '—',
-          total:       o.total || 0,
-          status:      this.localStatuses[o.id] || statusMap[o.status] || o.status,
-          date:        (o.createdAt || '').slice(0, 10),
-          paidAt:      o.paidAt,
-          mpPaymentId: o.mpPaymentId,
-          items:       o.items || [],
-          fromServer:  true,
+          id:           o.id,
+          customer:     o.buyerEmail || 'Sin email',
+          product:      (o.items || []).map(i => i.title + (i.quantity > 1 ? ' × ' + i.quantity : '')).join(', ') || '—',
+          total:        o.total || 0,
+          status:       this.localStatuses[o.id] || statusMap[o.status] || o.status,
+          date:         (o.createdAt || '').slice(0, 10),
+          paidAt:       o.paidAt,
+          mpPaymentId:  o.mpPaymentId,
+          items:        o.items || [],
+          shipping:     o.buyerShipping || {},
+          fromServer:   true,
         }));
         /* Combinar: pedidos del servidor + manuales (sin duplicados) */
         const serverIds = new Set(mapped.map(o => o.id));

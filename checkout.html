@@ -402,6 +402,36 @@ main.innerHTML = `
             <input type="text" class="form-input" id="shipAddress"
                    placeholder="Av. Corrientes 1234" autocomplete="street-address">
         </div>
+        <div class="form-group">
+            <label class="form-label">Provincia</label>
+            <select class="form-input" id="shipProvince">
+                <option value="">Seleccioná una provincia</option>
+                <option>Buenos Aires</option>
+                <option>CABA</option>
+                <option>Catamarca</option>
+                <option>Chaco</option>
+                <option>Chubut</option>
+                <option>Córdoba</option>
+                <option>Corrientes</option>
+                <option>Entre Ríos</option>
+                <option>Formosa</option>
+                <option>Jujuy</option>
+                <option>La Pampa</option>
+                <option>La Rioja</option>
+                <option>Mendoza</option>
+                <option>Misiones</option>
+                <option>Neuquén</option>
+                <option>Río Negro</option>
+                <option>Salta</option>
+                <option>San Juan</option>
+                <option>San Luis</option>
+                <option>Santa Cruz</option>
+                <option>Santa Fe</option>
+                <option>Santiago del Estero</option>
+                <option>Tierra del Fuego</option>
+                <option>Tucumán</option>
+            </select>
+        </div>
         <div class="form-row">
             <div class="form-group">
                 <label class="form-label">Ciudad</label>
@@ -482,6 +512,16 @@ async function iniciarPago() {
     btn.disabled = true;
     ocultarError();
 
+    /* Recopilar datos de envío */
+    const buyerShipping = {
+        name:     document.getElementById('buyerName')?.value?.trim()    || '',
+        last:     document.getElementById('buyerLast')?.value?.trim()    || '',
+        address:  document.getElementById('shipAddress')?.value?.trim()  || '',
+        province: document.getElementById('shipProvince')?.value?.trim() || '',
+        city:     document.getElementById('shipCity')?.value?.trim()     || '',
+        cp:       document.getElementById('shipCP')?.value?.trim()       || '',
+    };
+
     /* Mapear el carrito al formato que espera el servidor */
     const items = cart.map(item => ({
         productId: item.id,   /* id numérico del producto */
@@ -492,7 +532,7 @@ async function iniciarPago() {
         const res = await fetch(`${SERVER_URL}/api/create-preference`, {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ items, buyerEmail: email }),
+            body:    JSON.stringify({ items, buyerEmail: email, buyerShipping }),
         });
 
         const data = await res.json();

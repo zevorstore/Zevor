@@ -126,10 +126,20 @@ const itemSchema = z.object({
   qty:       z.coerce.number().int().min(1).max(20),
 });
 
+const shippingSchema = z.object({
+  name:     z.string().max(80).optional().default(''),
+  last:     z.string().max(80).optional().default(''),
+  address:  z.string().max(200).optional().default(''),
+  province: z.string().max(80).optional().default(''),
+  city:     z.string().max(80).optional().default(''),
+  cp:       z.string().max(20).optional().default(''),
+}).optional();
+
 const preferenceSchema = z.object({
-  items:      z.array(itemSchema).min(1).max(20),
-  buyerEmail: z.string().email().optional().or(z.literal('')),
-  orderId:    z.string().max(64).optional(),
+  items:          z.array(itemSchema).min(1).max(20),
+  buyerEmail:     z.string().email().optional().or(z.literal('')),
+  orderId:        z.string().max(64).optional(),
+  buyerShipping:  shippingSchema,
 });
 
 /* ══════════════════════════════════════════════════════════════
@@ -145,7 +155,7 @@ app.post('/api/create-preference', limiterPagos, async (req, res) => {
     });
   }
 
-  const { items, buyerEmail, orderId } = parsed.data;
+  const { items, buyerEmail, orderId, buyerShipping } = parsed.data;
 
   try {
     /* ─── Verificar stock y precio SERVER-SIDE ─── */
@@ -177,14 +187,15 @@ app.post('/api/create-preference', limiterPagos, async (req, res) => {
     const orderRef = orderId || `ZV-${Date.now()}`;
     const orders   = readJSON(ORDERS_FILE, []);
     orders.push({
-      id:          orderRef,
-      status:      'pending',
-      items:       itemsValidados,
-      total:       totalValidado,
-      buyerEmail:  buyerEmail || '',
-      createdAt:   new Date().toISOString(),
-      paidAt:      null,
-      mpPaymentId: null,
+      id:           orderRef,
+      status:       'pending',
+      items:        itemsValidados,
+      total:        totalValidado,
+      buyerEmail:   buyerEmail || '',
+      buyerShipping: buyerShipping || {},
+      createdAt:    new Date().toISOString(),
+      paidAt:       null,
+      mpPaymentId:  null,
     });
     writeJSON(ORDERS_FILE, orders);
 
@@ -194,7 +205,11 @@ app.post('/api/create-preference', limiterPagos, async (req, res) => {
       body: {
         external_reference: orderRef,
         items:              itemsValidados,
-        payer: buyerEmail ? { email: buyerEmail } : undefined,
+        payer: buyerEmail ? {
+          email:      buyerEmail,
+          first_name: buyerShipping?.name || undefined,
+          last_name:  buyerShipping?.last  || undefined,
+        } : undefined,
         back_urls: {
           success: `${process.env.SITE_URL}/pago-exitoso.html?order=${orderRef}`,
           failure: `${process.env.SITE_URL}/pago-fallido.html?order=${orderRef}`,
@@ -326,12 +341,14 @@ app.get('/api/order/:id', (req, res) => {
   const order  = orders.find(o => o.id === req.params.id);
   if (!order) return res.status(404).json({ error: 'Orden no encontrada.' });
   res.json({
-    id:        order.id,
-    status:    order.status,
-    total:     order.total,
-    items:     order.items,
-    createdAt: order.createdAt,
-    paidAt:    order.paidAt,
+    id:           order.id,
+    status:       order.status,
+    total:        order.total,
+    items:        order.items,
+    buyerEmail:   order.buyerEmail,
+    buyerShipping: order.buyerShipping || {},
+    createdAt:    order.createdAt,
+    paidAt:       order.paidAt,
   });
 });
 
