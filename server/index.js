@@ -118,8 +118,8 @@ function requireApiKey(req, res, next) {
    ══════════════════════════════════════════════════════════════ */
 
 const itemSchema = z.object({
-  productId: z.number().int().positive(),
-  qty:       z.number().int().min(1).max(20),
+  productId: z.coerce.number().int().positive(),
+  qty:       z.coerce.number().int().min(1).max(20),
 });
 
 const preferenceSchema = z.object({
