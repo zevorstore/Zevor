@@ -77,10 +77,8 @@ app.use(cors({
     }
     callback(new Error('CORS: origen no permitido'));
   },
-  methods: ['GET', 'POST', 'OPTIONS'],
+  methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type', 'x-api-key'],
-  preflightContinue: false,
-  optionsSuccessStatus: 204,
 }));
 
 /* Rate limiting general: 200 requests por 15 minutos por IP */
