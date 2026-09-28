@@ -1,3 +1,4 @@
+console.log('[startup] Iniciando ZEVOR Server...');
 require('dotenv').config();
 const express    = require('express');
 const cors       = require('cors');
@@ -365,8 +366,8 @@ if (!fs.existsSync(STOCK_FILE)) {
   writeJSON(STOCK_FILE, { 1:12, 2:3, 3:0, 4:7, 5:4, 6:1, 7:0, 8:8, 9:2 });
 }
 
-app.listen(PORT, () => {
-  console.log(`\n🛍  ZEVOR Server corriendo en http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`\n🛍  ZEVOR Server corriendo en http://0.0.0.0:${PORT}`);
   console.log(`   Modo: ${process.env.NODE_ENV || 'development'}`);
   console.log(`   Webhooks en: /api/webhook\n`);
 });
